@@ -5,6 +5,8 @@ import Login from '@/pages/Login'
 import Signup from '@/pages/Signup'
 import Home from '@/pages/Home'
 import Service from '@/pages/Service'
+import TopupStatus from '@/pages/TopupStatus'
+import Wallet from '@/pages/Wallet'
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
       >
         <Route path="/" element={<Home />} />
         <Route path="/service/:slug" element={<Service />} />
+        <Route path="/wallet" element={<Wallet />} />
+        <Route path="/wallet/recharge/:topupId" element={<TopupStatus />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

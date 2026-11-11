@@ -87,6 +87,11 @@ Edge Functions, Realtime).
 - SasPay : base `https://api.saspay.me/api/v1`, auth
   `Authorization: Bearer sk_live_...`. Spec OpenAPI :
   `https://docs.saspay.me/api-reference/openapi.json`.
+  `POST /checkout-sessions/` ignore `Idempotency-Key` (un double appel crée
+  deux sessions) : l'idempotence des recharges repose sur
+  `topups.idempotency_key` unique. Le webhook ne porte pas de metadata : la
+  recharge se retrouve via `topups.saspay_session_id` et
+  `GET /checkout-sessions/{id}/status/`.
 - 5sim : base `https://5sim.net/v1`, auth
   `Authorization: Bearer <JWT>` + `Accept: application/json`. Doc :
   `https://5sim.net/docs`.

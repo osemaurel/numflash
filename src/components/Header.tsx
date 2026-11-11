@@ -15,13 +15,14 @@ export default function Header() {
           Numflash
         </Link>
         <div className="flex items-center gap-2">
-          <div
-            className="flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium tabular-nums"
-            aria-label="Votre solde"
+          <Link
+            to="/wallet"
+            className="flex h-10 items-center gap-2 rounded-md border px-3 text-sm font-medium tabular-nums transition-colors hover:border-primary"
+            aria-label="Votre solde, ouvrir le portefeuille"
           >
             <Wallet className="h-4 w-4 text-muted-foreground" aria-hidden />
             <span>{loading ? '…' : formatFCFA(balance)}</span>
-          </div>
+          </Link>
           <Button
             variant="ghost"
             size="icon"

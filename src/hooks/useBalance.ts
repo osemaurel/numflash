@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { uuidv4 } from '@/lib/utils'
 import { useAuth } from './useAuth'
 
 export function useBalance() {
   const { user } = useAuth()
+  const userId = user?.id
   const [balance, setBalance] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setBalance(null)
       setLoading(false)
       return
@@ -32,19 +34,20 @@ export function useBalance() {
       setLoading(false)
     }
 
-    void fetchBalance(user.id)
+    void fetchBalance(userId)
 
+    // Nom unique : supabase-js réutilise un canal de même nom déjà abonné (header + page wallet).
     const channel = supabase
-      .channel(`wallet:${user.id}`)
+      .channel(`wallet-balance:${userId}:${uuidv4()}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'wallet_transactions',
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
-        () => void fetchBalance(user.id),
+        () => void fetchBalance(userId),
       )
       .subscribe()
 
@@ -52,7 +55,7 @@ export function useBalance() {
       active = false
       void supabase.removeChannel(channel)
     }
-  }, [user])
+  }, [userId])
 
   return { balance, loading }
 }
