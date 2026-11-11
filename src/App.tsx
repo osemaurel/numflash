@@ -3,7 +3,8 @@ import Layout from '@/components/Layout'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import Login from '@/pages/Login'
 import Signup from '@/pages/Signup'
-import Dashboard from '@/pages/Dashboard'
+import Home from '@/pages/Home'
+import Service from '@/pages/Service'
 
 export default function App() {
   return (
@@ -17,7 +18,8 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/service/:slug" element={<Service />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
