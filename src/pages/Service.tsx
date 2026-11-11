@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Search } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { useServices } from '@/hooks/useServices'
@@ -19,6 +20,7 @@ export default function Service() {
   const { rows, loading: pricesLoading } = useServicePrices(slug)
   const { settings, loading: settingsLoading } = usePricingSettings()
   const [sortBy, setSortBy] = useState<SortBy>('price_asc')
+  const [query, setQuery] = useState('')
 
   const enriched = useMemo(() => {
     if (!settings || rows.length === 0) return []
@@ -39,10 +41,19 @@ export default function Service() {
       }
     }
 
-    const list = Array.from(byCountry.values()).map((r) => ({
+    let list = Array.from(byCountry.values()).map((r) => ({
       ...r,
       price_xof: computePriceXof(r.cost_usd, service ?? null, settings),
     }))
+
+    const q = query.trim().toLowerCase()
+    if (q) {
+      list = list.filter(
+        (r) =>
+          (r.countries?.name_fr ?? '').toLowerCase().includes(q) ||
+          r.country_code.includes(q),
+      )
+    }
 
     switch (sortBy) {
       case 'price_asc':
@@ -58,7 +69,9 @@ export default function Service() {
         break
     }
     return list
-  }, [rows, settings, service, sortBy])
+  }, [rows, settings, service, sortBy, query])
+
+  const inStockCount = useMemo(() => enriched.filter((r) => r.stock > 0).length, [enriched])
 
   const loading = pricesLoading || settingsLoading || servicesLoading
 
@@ -70,7 +83,7 @@ export default function Service() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="truncate text-xl font-semibold">{service?.name_fr ?? slug}</h1>
           <p className="text-sm text-muted-foreground">
             Choisissez un pays, le numéro sera réservé pour vous.
@@ -78,21 +91,47 @@ export default function Service() {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 text-sm">
-        <label htmlFor="sort" className="text-muted-foreground">
-          Trier par
-        </label>
-        <select
-          id="sort"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <option value="price_asc">Prix croissant</option>
-          <option value="price_desc">Prix décroissant</option>
-          <option value="country_asc">Pays (A–Z)</option>
-        </select>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative sm:max-w-xs sm:flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher un pays…"
+            className="pl-9"
+            inputMode="search"
+            autoComplete="off"
+            aria-label="Rechercher un pays"
+          />
+        </div>
+        <div className="flex items-center justify-end gap-2 text-sm">
+          <label htmlFor="sort" className="text-muted-foreground">
+            Trier par
+          </label>
+          <select
+            id="sort"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortBy)}
+            className="h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="price_asc">Prix croissant</option>
+            <option value="price_desc">Prix décroissant</option>
+            <option value="country_asc">Pays (A–Z)</option>
+          </select>
+        </div>
       </div>
+
+      {!loading && enriched.length > 0 && (
+        <p className="text-xs text-muted-foreground">
+          {enriched.length} pays {query ? 'correspondent' : 'disponibles'}
+          {inStockCount > 0 && inStockCount < enriched.length && (
+            <> · {inStockCount} en stock</>
+          )}
+        </p>
+      )}
 
       {loading ? (
         <div className="space-y-2">
