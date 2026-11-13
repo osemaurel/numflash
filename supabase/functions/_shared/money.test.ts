@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { decimalToXof, xofToDecimalString } from './money.ts'
+import { compareDecimal, decimalToXof, xofToDecimalString } from './money.ts'
+
+describe('compareDecimal', () => {
+  it('compare des soldes à 4 décimales sans erreur d’arrondi', () => {
+    expect(compareDecimal(9.99, 10)).toBe(-1)
+    expect(compareDecimal(10, 10)).toBe(0)
+    expect(compareDecimal(0.1 + 0.2, 0.3)).toBe(0)
+    expect(compareDecimal(12.4501, 12.45)).toBe(1)
+    expect(compareDecimal(-1, 0)).toBe(-1)
+  })
+})
 
 describe('xofToDecimalString', () => {
   it('formate un entier FCFA au format décimal SasPay', () => {

@@ -9,6 +9,18 @@ export function xofToDecimalString(amountXof: number): string {
   return `${amountXof}.00`
 }
 
+// Compare deux montants à 4 décimales maximum (soldes fournisseur, seuils) sans arithmétique flottante.
+export function compareDecimal(a: number, b: number): -1 | 0 | 1 {
+  const scaled = (n: number) => {
+    const fixed = n.toFixed(4)
+    if (!/^-?\d+\.\d{4}$/.test(fixed)) throw new Error(`invalid decimal: ${n}`)
+    return BigInt(fixed.replace('.', ''))
+  }
+  const x = scaled(a)
+  const y = scaled(b)
+  return x < y ? -1 : x > y ? 1 : 0
+}
+
 // Le franc CFA n'a pas de sous-unité : toute partie décimale non nulle est rejetée.
 export function decimalToXof(value: unknown): number {
   if (typeof value === 'number') {

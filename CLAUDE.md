@@ -80,6 +80,26 @@ Edge Functions, Realtime).
   avec préfixe timestamp `YYYYMMDDHHMMSS_slug.sql`. Jamais d'édition
   d'une migration déjà poussée en production ; on en écrit une nouvelle.
 
+- **Toute opération qui débite un wallet verrouille d'abord
+  `profiles(id)` avec `FOR UPDATE`** : les débits d'un même utilisateur
+  sont sérialisés et le solde ne peut pas passer sous zéro.
+
+- **Les écritures d'administration passent uniquement par les RPC
+  `admin_*`** : elles appellent `require_admin()`, valident les entrées
+  et journalisent avec `request_meta()` (IP, user-agent, request_id).
+
+- **L'anti-abus vit dans les déclencheurs de `orders`** (erreurs
+  `NF_*`), jamais dans le front. Passer une commande en `canceled` exige
+  `canceled_by` (`user`, `system` ou `admin`) ; seules les annulations
+  `user` sont limitées. Le parcours d'achat insère la commande **avant**
+  d'appeler 5sim, pour que le garde-fou s'applique avant toute dépense.
+
+- **Prix client : arithmétique entière exacte** (`src/lib/pricing.ts`),
+  jamais de multiplication en flottant.
+
+- **PostgREST renvoie au plus 1 000 lignes** : toute lecture d'une
+  table qui peut dépasser ce volume se fait par pages avec `.range()`.
+
 ---
 
 ## Références techniques

@@ -60,6 +60,29 @@ describe('computePriceXof', () => {
     expect(computePriceXof(0.373, null, defaults)).toBe(300)
   })
 
+  it('calcul exact : 10 $ × 600 × 1,35 = 8 100 FCFA, pas 8 200 (piège du flottant)', () => {
+    // En flottant, 10 * 600 * 1.35 = 8100.000000000001 → ceil passait au palier suivant.
+    expect(computePriceXof(10, { margin_override: 0.35 }, defaults)).toBe(8100)
+    expect(computePriceXof(10, null, { ...defaults, margin_rate: 0.35 })).toBe(8100)
+  })
+
+  it('calcul exact avec un taux de change à 4 décimales', () => {
+    // 0.1234 × 655.957 × 1.30 = 105.2259… → 200 (pas de 100), sans dérive.
+    const s: PricingSettings = { fx_usd_xof: 655.957, margin_rate: 0.3, rounding_step: 100, price_floor_xof: 0 }
+    expect(computePriceXof(0.1234, null, s)).toBe(200)
+    // 1.2820 × 655.957 × 1.30 = 1093.2… → 1100
+    expect(computePriceXof(1.282, null, s)).toBe(1100)
+  })
+
+  it('un multiple exact du pas reste sur ce palier', () => {
+    // 5 × 600 × 1.30 = 3900 pile → 3900
+    expect(computePriceXof(5, null, defaults)).toBe(3900)
+  })
+
+  it('rejette une marge négative', () => {
+    expect(() => computePriceXof(0.15, { margin_override: -0.1 }, defaults)).toThrow()
+  })
+
   it('rejette un cost_usd négatif', () => {
     expect(() => computePriceXof(-0.01, null, defaults)).toThrow()
   })
