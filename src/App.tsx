@@ -2,7 +2,6 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import Signup from '@/pages/Signup'
 import Home from '@/pages/Home'
 import Service from '@/pages/Service'
 import TopupStatus from '@/pages/TopupStatus'
@@ -20,8 +19,9 @@ const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
 const GlowPage = lazy(() => import('@/pages/glow/GlowPage'))
 // Landing publique : chargée seulement pour les visiteurs non connectés.
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage'))
-// Connexion : même design (et mêmes ressources) que la landing, donc chargée avec elles.
+// Connexion et inscription : même design (et mêmes ressources) que la landing, donc chargée avec elles.
 const Login = lazy(() => import('@/pages/Login'))
+const Signup = lazy(() => import('@/pages/Signup'))
 
 const lazyPage = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>
 /** Pages au design de la landing : le fond reste celui de la page pendant le chargement. */
@@ -43,7 +43,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/connexion" element={lazyGlow(<Login />)} />
-      <Route path="/inscription" element={<Signup />} />
+      <Route path="/inscription" element={lazyGlow(<Signup />)} />
       <Route path="/glow" element={lazyPage(<GlowPage />)} />
       <Route path="/" element={<HomeEntry />} />
       <Route
