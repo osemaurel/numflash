@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
+import { safeRedirect, withRedirect } from '@/lib/redirect'
 
 const schema = z.object({
   full_name: z.string().trim().min(2, 'Votre nom est requis'),
@@ -22,6 +23,8 @@ type FormState = z.infer<typeof schema>
 
 export default function Signup() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const target = safeRedirect(params.get('redirect'))
   const [form, setForm] = useState<FormState>({ full_name: '', phone: '', email: '', password: '' })
   const [submitting, setSubmitting] = useState(false)
 
@@ -53,7 +56,7 @@ export default function Signup() {
       return
     }
     toast.success('Compte créé. Bienvenue !')
-    navigate('/', { replace: true })
+    navigate(target ?? '/', { replace: true })
   }
 
   return (
@@ -116,7 +119,7 @@ export default function Signup() {
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Déjà inscrit ?{' '}
-              <Link to="/connexion" className="text-primary underline-offset-4 hover:underline">
+              <Link to={withRedirect('/connexion', target)} className="text-primary underline-offset-4 hover:underline">
                 Se connecter
               </Link>
             </p>

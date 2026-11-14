@@ -72,7 +72,7 @@ export default function Cta() {
           <div className="absolute w-[410px]" style={{ left: phone.left, top: phone.top }}>
             <Reveal replay amount={0} from={{ y: 150 }} transition={spring(0, 0.8)}>
               <PhoneFrame>
-                <AppScreen tab="Accueil" total={{ label: 'Solde disponible', amount: 12500 }} sections={['wallet', 'numbers', 'codes']} />
+                <AppScreen tab="Accueil" total={{ label: 'Solde disponible', amount: 14500 }} sections={['wallet', 'numbers', 'codes']} />
               </PhoneFrame>
             </Reveal>
           </div>

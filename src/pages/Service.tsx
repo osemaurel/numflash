@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Search } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -9,12 +9,15 @@ import { useServices } from '@/hooks/useServices'
 import { useServicePrices, type ServicePriceRow } from '@/hooks/useServicePrices'
 import { usePricingSettings } from '@/hooks/usePricingSettings'
 import { computePriceXof } from '@/lib/pricing'
-import { formatFCFA } from '@/lib/utils'
+import { cn, formatFCFA } from '@/lib/utils'
 
 type SortBy = 'price_asc' | 'price_desc' | 'country_asc'
 
 export default function Service() {
   const { slug } = useParams<{ slug: string }>()
+  // Pays choisi depuis la landing (« Acheter un numéro ») : affiché en tête et mis en évidence.
+  const [params] = useSearchParams()
+  const preferred = params.get('pays')
   const { services, loading: servicesLoading } = useServices()
   const service = services.find((s) => s.slug === slug)
   const { rows, loading: pricesLoading } = useServicePrices(slug)
@@ -68,8 +71,12 @@ export default function Service() {
         )
         break
     }
+    if (preferred && !q) {
+      const i = list.findIndex((r) => r.country_code === preferred)
+      if (i > 0) list.unshift(...list.splice(i, 1))
+    }
     return list
-  }, [rows, settings, service, sortBy, query])
+  }, [rows, settings, service, sortBy, query, preferred])
 
   const inStockCount = useMemo(() => enriched.filter((r) => r.stock > 0).length, [enriched])
 
@@ -149,7 +156,12 @@ export default function Service() {
             const inStock = r.stock > 0
             return (
               <li key={r.country_code}>
-                <Card className="flex items-center justify-between gap-3 p-3">
+                <Card
+                  className={cn(
+                    'flex items-center justify-between gap-3 p-3',
+                    r.country_code === preferred && 'ring-2 ring-primary',
+                  )}
+                >
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="text-2xl leading-none" aria-hidden>
                       {r.countries?.flag_emoji ?? '🌐'}

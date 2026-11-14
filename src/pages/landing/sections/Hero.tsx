@@ -96,7 +96,7 @@ export default function Hero({ facts }: { facts: LandingFacts }) {
           <div className="absolute left-1/2 top-[23px] w-[286px] -translate-x-1/2 min-[810px]:left-2 min-[810px]:top-[22px] min-[810px]:w-[324px] min-[810px]:translate-x-0 min-[1200px]:left-5 min-[1200px]:top-10 min-[1200px]:w-[409px]">
             <Appear y={60} duration={0.7}>
               <PhoneFrame>
-                <AppScreen tab="Accueil" total={{ label: 'Solde disponible', amount: 12500 }} sections={['wallet', 'numbers', 'codes']} />
+                <AppScreen tab="Accueil" total={{ label: 'Solde disponible', amount: 14500 }} sections={['wallet', 'numbers', 'codes']} />
               </PhoneFrame>
             </Appear>
           </div>

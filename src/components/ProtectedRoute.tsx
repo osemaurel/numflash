@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
+import { withRedirect } from '@/lib/redirect'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
     return (
@@ -14,7 +16,8 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!session) {
-    return <Navigate to="/connexion" replace />
+    // Après connexion, retour sur la page demandée.
+    return <Navigate to={withRedirect('/connexion', location.pathname + location.search)} replace />
   }
 
   return <>{children}</>

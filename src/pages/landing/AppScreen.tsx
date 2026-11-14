@@ -6,7 +6,7 @@ import { ServiceTile, digits, signedFCFA } from './ui'
 /*
  * Écrans de l'application Numflash dans le cadre iPhone (largeur de conception 385 px).
  * Données d'illustration : les numéros utilisent des plages réservées à la fiction
- * (+44 7700 900xxx, +1 202 555 01xx, +33 6 39 98 xx xx) et les prix sont des tarifs
+ * (+44 7700 900xxx, +1 202 555 01xx, +33 6 39 98 xx xx) et les prix suivent la grille
  * réels relevés dans le catalogue.
  */
 
@@ -45,16 +45,16 @@ function WalletCard() {
           <div className="flex flex-1 flex-col gap-1.5">
             <div className="flex items-center justify-between">
               <span className={t18}>Portefeuille</span>
-              <span className={t16}>{formatFCFA(12500)}</span>
+              <span className={t16}>{formatFCFA(14500)}</span>
             </div>
             <div className={cn('flex flex-col gap-1.5', t13)} style={{ color: MUTED }}>
               <div className="flex justify-between">
                 <span>Rechargé</span>
-                <span>{signedFCFA(15000)}</span>
+                <span>{signedFCFA(25000)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Dépensé</span>
-                <span>{signedFCFA(-2500)}</span>
+                <span>{signedFCFA(-10500)}</span>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@ function WalletCard() {
           <div className="flex flex-1 flex-col gap-1">
             <div className="flex items-center justify-between">
               <span className={t18}>Commandes</span>
-              <span className={t16}>{formatFCFA(1400)}</span>
+              <span className={t16}>{formatFCFA(10500)}</span>
             </div>
             <div className={cn('flex justify-between', t13)} style={{ color: MUTED }}>
               <span>3 numéros</span>
@@ -78,9 +78,9 @@ function WalletCard() {
 }
 
 const NUMBERS = [
-  { service: 'WhatsApp', dial: '+44', number: '+44 7700 900123', price: 600 },
-  { service: 'Telegram', dial: '+1', number: '+1 202 555 0147', price: 600 },
-  { service: 'Google', dial: '+33', number: '+33 6 39 98 12 34', price: 200 },
+  { service: 'WhatsApp', dial: '+44', number: '+44 7700 900123', price: 3500 },
+  { service: 'Telegram', dial: '+1', number: '+1 202 555 0147', price: 3500 },
+  { service: 'Google', dial: '+33', number: '+33 6 39 98 12 34', price: 3500 },
 ]
 
 function NumbersCard() {
@@ -134,13 +134,13 @@ function CodesCard({ title = 'Codes reçus' }: { title?: string }) {
   )
 }
 
-/** Prix réels relevés pour le Royaume-Uni (catalogue du 14/11/2026). */
+/** Royaume-Uni : tous ces services sont au prix de départ (3 500 FCFA). */
 const UK_PRICES = [
-  { service: 'WhatsApp', price: 600 },
-  { service: 'Telegram', price: 700 },
-  { service: 'Google', price: 200 },
-  { service: 'Facebook', price: 150 },
-  { service: 'Instagram', price: 150 },
+  { service: 'WhatsApp', price: 3500 },
+  { service: 'Telegram', price: 3500 },
+  { service: 'Google', price: 3500 },
+  { service: 'Facebook', price: 3500 },
+  { service: 'Instagram', price: 3500 },
 ]
 
 function ServicesCard() {
@@ -168,10 +168,10 @@ function ServicesCard() {
 }
 
 const HISTORY = [
-  { label: 'Recharge Mobile Money', sub: 'Confirmée', amount: 10000 },
-  { label: 'WhatsApp · Royaume-Uni', sub: 'Code reçu', amount: -600 },
-  { label: 'Telegram · États-Unis', sub: 'Code reçu', amount: -600 },
-  { label: 'Google · France', sub: 'Code reçu', amount: -200 },
+  { label: 'Recharge Mobile Money', sub: 'Confirmée', amount: 20000 },
+  { label: 'WhatsApp · Royaume-Uni', sub: 'Code reçu', amount: -3500 },
+  { label: 'Telegram · États-Unis', sub: 'Code reçu', amount: -3500 },
+  { label: 'Google · France', sub: 'Code reçu', amount: -3500 },
 ]
 
 function HistoryCard() {

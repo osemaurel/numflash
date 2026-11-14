@@ -52,7 +52,7 @@ function BalanceVisual() {
       </Reveal>
       <Reveal replay amount={0} from={{ y: 50, scale: 0.5 }} transition={spring(0.2, 0.4)} className={cn(row, 'h-[47px]')} style={{ boxShadow: SH_PILL }}>
         <span className="flex items-baseline gap-1">
-          <span className="font-glow-display text-[20px] font-semibold leading-[24px] text-black">{digits(12500)}</span>
+          <span className="font-glow-display text-[20px] font-semibold leading-[24px] text-black">{digits(14500)}</span>
           <span className={gray}>FCFA</span>
         </span>
         <Coin bg="#13a538">
@@ -72,7 +72,7 @@ function BalanceVisual() {
   )
 }
 
-/** Prix WhatsApp réels relevés dans le catalogue (14/11/2026). */
+/** Prix WhatsApp de la grille (3 500 FCFA minimum, coût fournisseur du 14/11/2026). */
 function PriceVisual() {
   const pop = (delay: number) => ({
     initial: { opacity: 0, scale: 0.5 },
@@ -83,12 +83,12 @@ function PriceVisual() {
   return (
     <div className="relative h-[270px] w-[373px] max-w-full min-[810px]:h-[300px]">
       <motion.figure {...pop(0.1)} className="absolute left-[23px] top-[26px] h-40 w-[328px] overflow-hidden rounded-2xl max-[809px]:left-[15px] max-[809px]:top-[-4px]">
-        <PlanOption label="Côte d’Ivoire" price={formatFCFA(400)} className="absolute left-0 top-[17px] w-[295px]" />
+        <PlanOption label="Royaume-Uni" price={formatFCFA(3500)} className="absolute left-0 top-[17px] w-[295px]" />
         <motion.div {...pop(0.25)} className="absolute left-[33px] top-[61px]">
-          <PlanOption label="Nigeria" price={formatFCFA(300)} selected className="w-[295px]" />
+          <PlanOption label="Côte d’Ivoire" price={formatFCFA(3500)} selected className="w-[295px]" />
         </motion.div>
         <motion.div {...pop(0.4)} className="absolute left-0 top-[105px]">
-          <PlanOption label="Pays-Bas" price={formatFCFA(900)} className="w-[295px]" />
+          <PlanOption label="Allemagne" price={formatFCFA(3900)} className="w-[295px]" />
         </motion.div>
       </motion.figure>
       <div className="absolute z-[1] max-[809px]:hidden" style={{ left: 234 - 202, top: 231.5 - 114.5, transform: 'rotate(-9deg) scale(0.7)' }}>
@@ -106,7 +106,7 @@ const block = 'overflow-hidden rounded-3xl bg-[var(--glow-bg)]'
 export default function Benefits({ facts }: { facts: LandingFacts }) {
   const stats: { icon: LucideIcon; value: string; label: string }[] = [
     { icon: Globe2, value: String(facts.countries), label: 'Pays disponibles' },
-    { icon: Tag, value: formatFCFA(facts.minPrice), label: 'Le numéro, au prix le plus bas' },
+    { icon: Tag, value: formatFCFA(facts.minPrice), label: 'Le prix de départ d’un numéro' },
     { icon: RefreshCw, value: '10 min', label: 'Entre deux mises à jour des prix' },
   ]
   return (

@@ -167,7 +167,7 @@ export default function AllInOne({ facts }: { facts: LandingFacts }) {
           <div className="relative flex h-[673px] items-start justify-center min-[810px]:max-[1199px]:hidden">
             <div className="absolute top-[-7px] w-[328px]">
               <PhoneFrame>
-                <AppScreen tab="Accueil" total={{ label: 'Solde disponible', amount: 12500 }} sections={['wallet', 'numbers', 'codes']} />
+                <AppScreen tab="Accueil" total={{ label: 'Solde disponible', amount: 14500 }} sections={['wallet', 'numbers', 'codes']} />
               </PhoneFrame>
             </div>
           </div>

@@ -2,7 +2,6 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import Login from '@/pages/Login'
 import Signup from '@/pages/Signup'
 import Home from '@/pages/Home'
 import Service from '@/pages/Service'
@@ -21,14 +20,18 @@ const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
 const GlowPage = lazy(() => import('@/pages/glow/GlowPage'))
 // Landing publique : chargée seulement pour les visiteurs non connectés.
 const LandingPage = lazy(() => import('@/pages/landing/LandingPage'))
+// Connexion : même design (et mêmes ressources) que la landing, donc chargée avec elles.
+const Login = lazy(() => import('@/pages/Login'))
 
 const lazyPage = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>
+/** Pages au design de la landing : le fond reste celui de la page pendant le chargement. */
+const lazyGlow = (node: ReactNode) => <Suspense fallback={<div className="min-h-screen bg-[#f8f7f7]" />}>{node}</Suspense>
 
 /** « / » : la landing pour les visiteurs, le catalogue pour les clients connectés. */
 function HomeEntry() {
   const { session, loading } = useAuth()
   if (loading) return <div className="min-h-screen bg-background" />
-  if (!session) return <Suspense fallback={<div className="min-h-screen bg-[#f8f7f7]" />}><LandingPage /></Suspense>
+  if (!session) return lazyGlow(<LandingPage />)
   return (
     <Layout>
       <Home />
@@ -39,7 +42,7 @@ function HomeEntry() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/connexion" element={<Login />} />
+      <Route path="/connexion" element={lazyGlow(<Login />)} />
       <Route path="/inscription" element={<Signup />} />
       <Route path="/glow" element={lazyPage(<GlowPage />)} />
       <Route path="/" element={<HomeEntry />} />

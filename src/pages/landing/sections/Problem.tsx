@@ -45,11 +45,11 @@ function LedgerVisual() {
             Confirmée
           </span>
         </div>
-        <span className="text-[14px] font-semibold leading-[21px] tracking-[-0.28px] text-[rgb(26,14,18)]">{signedFCFA(5000)}</span>
+        <span className="text-[14px] font-semibold leading-[21px] tracking-[-0.28px] text-[rgb(26,14,18)]">{signedFCFA(20000)}</span>
       </div>
-      <LedgerRow label="WhatsApp" amount={-600} delay={0.1} />
-      <LedgerRow label="Telegram" amount={-700} delay={0.2} />
-      <LedgerRow label="Google" amount={-200} delay={0.3} />
+      <LedgerRow label="WhatsApp" amount={-3500} delay={0.1} />
+      <LedgerRow label="Telegram" amount={-3500} delay={0.2} />
+      <LedgerRow label="Google" amount={-3500} delay={0.3} />
       <div className="absolute left-2.5 top-[25px] z-[1] flex h-28 w-3 flex-col items-center justify-between">
         <Dot active />
         <span className="h-5 w-1 rounded-md bg-[rgb(0,157,255)]" />
@@ -63,7 +63,7 @@ function LedgerVisual() {
   )
 }
 
-/* ---------- Visuel 2 : choix du pays (prix WhatsApp réels) ---------- */
+/* ---------- Visuel 2 : choix du pays (prix WhatsApp de la grille, 3 500 FCFA minimum) ---------- */
 function CountryVisual() {
   const pop = (delay: number) => ({
     initial: { opacity: 0, scale: 0.5 },
@@ -73,12 +73,12 @@ function CountryVisual() {
   })
   return (
     <motion.figure {...pop(0.1)} className="relative h-[160px] w-[315px] overflow-hidden rounded-2xl">
-      <PlanOption label="Royaume-Uni" price={formatFCFA(600)} className="absolute left-0 top-[17px]" />
+      <PlanOption label="France" price={formatFCFA(3500)} className="absolute left-0 top-[17px]" />
       <motion.div {...pop(0.25)} className="absolute left-8 top-[61px]">
-        <PlanOption label="Sénégal" price={formatFCFA(400)} selected />
+        <PlanOption label="États-Unis" price={formatFCFA(3500)} selected />
       </motion.div>
       <motion.div {...pop(0.4)} className="absolute left-0 top-[105px]">
-        <PlanOption label="États-Unis" price={formatFCFA(700)} />
+        <PlanOption label="Allemagne" price={formatFCFA(3900)} />
       </motion.div>
     </motion.figure>
   )
