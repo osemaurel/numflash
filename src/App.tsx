@@ -16,6 +16,8 @@ const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'))
 const AdminCatalog = lazy(() => import('@/pages/admin/AdminCatalog'))
 const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
+// Maquette « Glow » (base du futur design) : publique, isolée et chargée à la demande.
+const GlowPage = lazy(() => import('@/pages/glow/GlowPage'))
 
 const lazyPage = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>
 
@@ -24,6 +26,7 @@ export default function App() {
     <Routes>
       <Route path="/connexion" element={<Login />} />
       <Route path="/inscription" element={<Signup />} />
+      <Route path="/glow" element={lazyPage(<GlowPage />)} />
       <Route
         element={
           <ProtectedRoute>

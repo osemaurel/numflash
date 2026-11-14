@@ -1,0 +1,88 @@
+/*
+ * Page « Glow » : duplicata du modèle Framer glow.framer.media.
+ * Tout est confiné sous .glow-root pour ne pas toucher au reste de l'application.
+ * Polices auto-hébergées dans /public/glow/fonts (sous-ensembles latin + latin étendu).
+ */
+
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/glow/fonts/inter-400.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/glow/fonts/inter-500.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/glow/fonts/inter-600.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 700; font-display: swap; src: url('/glow/fonts/inter-700.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 400; font-display: swap; src: url('/glow/fonts/inter-ext-400.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 500; font-display: swap; src: url('/glow/fonts/inter-ext-500.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Glow Inter'; font-style: normal; font-weight: 600; font-display: swap; src: url('/glow/fonts/inter-ext-600.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Glow Inter Display'; font-style: normal; font-weight: 500; font-display: swap; src: url('/glow/fonts/inter-display-500.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Glow Inter Display'; font-style: normal; font-weight: 600; font-display: swap; src: url('/glow/fonts/inter-display-600.woff2') format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Glow Inter Display'; font-style: normal; font-weight: 500; font-display: swap; src: url('/glow/fonts/inter-display-ext-500.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Glow Inter Display'; font-style: normal; font-weight: 600; font-display: swap; src: url('/glow/fonts/inter-display-ext-600.woff2') format('woff2'); unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Glow Geist'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/glow/fonts/geist-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Glow Geist Mono'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/glow/fonts/geist-mono-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Glow Manrope'; font-style: normal; font-weight: 600; font-display: swap; src: url('/glow/fonts/manrope-600.woff2') format('woff2'); }
+@font-face { font-family: 'Glow Manrope'; font-style: normal; font-weight: 700; font-display: swap; src: url('/glow/fonts/manrope-700.woff2') format('woff2'); }
+@font-face { font-family: 'Glow Panchang'; font-style: normal; font-weight: 700; font-display: swap; src: url('/glow/fonts/panchang-700.woff2') format('woff2'); }
+@font-face { font-family: 'Glow Irish Grover'; font-style: normal; font-weight: 400; font-display: swap; src: url('/glow/fonts/irish-grover-latin.woff2') format('woff2'); }
+
+.glow-root {
+  /* Jetons de couleur du modèle */
+  --glow-blue: #0085ee;
+  --glow-blue-dark: #0a77c9;
+  --glow-bg: #f8f7f7;
+  --glow-black: #000;
+  --glow-text: #212121;
+  --glow-gray: #696969;
+  --glow-gold: #c2a463;
+  --glow-line: #ebebeb;
+  --glow-ink: #102329;
+  --glow-white: #fff;
+
+  font-family: 'Glow Inter', 'Inter', system-ui, sans-serif;
+  color: var(--glow-black);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: normal;
+  overflow-x: clip;
+}
+
+.glow-root *,
+.glow-root *::before,
+.glow-root *::after {
+  box-sizing: border-box;
+}
+
+.glow-root :where(img) {
+  display: block;
+  max-width: none;
+}
+
+.glow-root .font-glow-display { font-family: 'Glow Inter Display', 'Glow Inter', sans-serif; }
+.glow-root .font-glow-geist { font-family: 'Glow Geist', 'Glow Inter', sans-serif; }
+.glow-root .font-glow-mono { font-family: 'Glow Geist Mono', ui-monospace, monospace; }
+.glow-root .font-glow-manrope { font-family: 'Glow Manrope', 'Glow Inter', sans-serif; }
+.glow-root .font-glow-panchang { font-family: 'Glow Panchang', 'Glow Inter', sans-serif; }
+.glow-root .font-glow-grover { font-family: 'Glow Irish Grover', cursive; }
+.glow-root .font-glow-system { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Glow Inter', sans-serif; }
+
+/* Icône en masque : la couleur vient de background-color */
+.glow-root .glow-mask {
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/* Bandeau de logos qui défile en continu */
+@keyframes glow-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.glow-root .glow-marquee {
+  animation: glow-marquee var(--glow-marquee-duration, 40s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-root .glow-marquee { animation: none; }
+}
