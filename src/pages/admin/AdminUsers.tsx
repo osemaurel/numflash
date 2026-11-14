@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Loader2, Search } from 'lucide-react'
+import { Ban, Search, Unlock, WalletCards } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/hooks/useAuth'
 import { translateAdminError } from '@/lib/admin-errors'
 import { fractionToPercent, parseIntegerInput } from '@/lib/decimal'
 import { supabase } from '@/lib/supabase'
 import { cn, formatDateTime, formatFCFA } from '@/lib/utils'
+import { Avatar, Badge, Button, Card, Empty, Field, PageHeader, Segmented, TextInput, inputClass } from './ui'
 
 interface UserRow {
   id: string
@@ -56,51 +52,34 @@ function AdjustPanel({ user, onDone, onCancel }: { user: UserRow; onDone: (balan
   }
 
   return (
-    <div className="space-y-3 border-t p-3">
-      <div className="inline-flex rounded-lg border p-1">
-        {(['credit', 'debit'] as const).map((d) => (
-          <button
-            key={d}
-            type="button"
-            aria-pressed={direction === d}
-            onClick={() => setDirection(d)}
-            className={cn(
-              'h-8 rounded-md px-3 text-sm font-medium',
-              direction === d ? 'bg-primary text-primary-foreground' : 'text-muted-foreground',
-            )}
-          >
-            {d === 'credit' ? 'Créditer' : 'Débiter'}
-          </button>
-        ))}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor={`amount-${user.id}`}>Montant (FCFA)</Label>
-          <Input id={`amount-${user.id}`} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} />
-          {after !== null ? (
-            <p className={cn('text-xs', after < 0 ? 'text-destructive' : 'text-muted-foreground')}>
-              Nouveau solde : {formatFCFA(after)}
-            </p>
-          ) : null}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor={`reason-${user.id}`}>Motif (obligatoire)</Label>
-          <Input
-            id={`reason-${user.id}`}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            maxLength={500}
-            placeholder="Ex. remboursement commande non reçue"
-          />
-          <p className="text-xs text-muted-foreground">Inscrit au journal d'audit. 5 caractères minimum.</p>
-        </div>
+    <div className="flex flex-col gap-4 border-t border-[var(--glow-line)] pt-4">
+      <Segmented
+        label="Sens de l’ajustement"
+        value={direction}
+        onChange={setDirection}
+        options={[
+          { value: 'credit', label: 'Créditer' },
+          { value: 'debit', label: 'Débiter' },
+        ]}
+      />
+      <div className="grid grid-cols-1 gap-4 min-[810px]:grid-cols-2">
+        <Field
+          id={`amount-${user.id}`}
+          label="Montant (FCFA)"
+          error={after !== null && after < 0 ? `Le solde deviendrait négatif (${formatFCFA(after)}).` : undefined}
+          hint={after !== null ? `Nouveau solde : ${formatFCFA(after)}` : undefined}
+        >
+          <TextInput id={`amount-${user.id}`} inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} aria-invalid={after !== null && after < 0} />
+        </Field>
+        <Field id={`reason-${user.id}`} label="Motif (obligatoire)" hint="Inscrit au journal d’audit. 5 caractères minimum.">
+          <TextInput id={`reason-${user.id}`} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} placeholder="Ex. remboursement commande non reçue" />
+        </Field>
       </div>
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => void submit()} disabled={saving || invalid}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+        <Button variant="primary" size="sm" loading={saving} onClick={() => void submit()} disabled={invalid}>
           {value ? `${direction === 'credit' ? 'Créditer' : 'Débiter'} ${formatFCFA(value)}` : 'Valider'}
         </Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
           Annuler
         </Button>
       </div>
@@ -128,22 +107,18 @@ function BlockPanel({ user, onDone, onCancel }: { user: UserRow; onDone: (blocke
   }
 
   return (
-    <div className="space-y-3 border-t p-3">
-      <p className="text-sm text-muted-foreground">
-        {blocking
-          ? "Un compte bloqué ne peut plus recharger ni acheter de numéro. Il reste consultable."
-          : 'Le compte pourra de nouveau recharger et acheter.'}
+    <div className="flex flex-col gap-4 border-t border-[var(--glow-line)] pt-4">
+      <p className="text-[14px] leading-[20px] text-[var(--glow-gray)]">
+        {blocking ? 'Un compte bloqué ne peut plus recharger ni acheter de numéro. Il reste consultable.' : 'Le compte pourra de nouveau recharger et acheter.'}
       </p>
-      <div className="space-y-1.5">
-        <Label htmlFor={`block-${user.id}`}>{blocking ? 'Motif (obligatoire)' : 'Motif (facultatif)'}</Label>
-        <Input id={`block-${user.id}`} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} />
-      </div>
+      <Field id={`block-${user.id}`} label={blocking ? 'Motif (obligatoire)' : 'Motif (facultatif)'}>
+        <TextInput id={`block-${user.id}`} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} />
+      </Field>
       <div className="flex gap-2">
-        <Button size="sm" variant={blocking ? 'destructive' : 'default'} onClick={() => void submit()} disabled={saving || invalid}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
-          {blocking ? 'Bloquer' : 'Débloquer'}
+        <Button variant={blocking ? 'dark' : 'primary'} size="sm" loading={saving} onClick={() => void submit()} disabled={invalid}>
+          {blocking ? 'Bloquer le compte' : 'Débloquer le compte'}
         </Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
           Annuler
         </Button>
       </div>
@@ -216,98 +191,102 @@ export default function AdminUsers() {
   const update = (id: string, patch: Partial<UserRow>) => setRows((r) => r.map((u) => (u.id === id ? { ...u, ...patch } : u)))
 
   return (
-    <div className="space-y-4">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-        <Input
+    <div className="flex flex-col gap-5 min-[810px]:gap-6">
+      <PageHeader title="Utilisateurs" subtitle="Recherchez un client, ajustez son solde ou bloquez son compte. Chaque action est inscrite au journal d’audit." />
+
+      <label className="relative block">
+        <span className="sr-only">Rechercher un utilisateur</span>
+        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--glow-gray)]" aria-hidden />
+        <input
+          type="search"
+          inputMode="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="E-mail, nom, téléphone ou identifiant…"
-          className="pl-9"
-          aria-label="Rechercher un utilisateur"
-          inputMode="search"
+          placeholder="E-mail, nom, téléphone ou identifiant"
+          className={`${inputClass} pl-10`}
         />
-      </div>
+      </label>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
+        <div className="flex flex-col gap-3" aria-label="Chargement">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-40 animate-pulse rounded-[28px] bg-white" style={{ opacity: 1 - i * 0.15 }} />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <Card className="p-6 text-center text-sm text-muted-foreground">Aucun utilisateur trouvé.</Card>
+        <Card>
+          <Empty>Aucun utilisateur trouvé.</Empty>
+        </Card>
       ) : (
         <>
-          <p className="text-xs text-muted-foreground">
-            {total} utilisateur{total > 1 ? 's' : ''}
+          <p className="text-[13px] text-[var(--glow-gray)]">
+            <span className="font-semibold text-black">{total}</span> utilisateur{total > 1 ? 's' : ''}
           </p>
-          <ul className="space-y-2">
+          <ul className="grid grid-cols-1 gap-3 min-[1200px]:grid-cols-2 min-[1200px]:items-start">
             {rows.map((u) => {
               const flagged = u.cancel_ratio !== null && u.cancel_ratio > threshold
               const isMe = u.id === me?.id
+              const name = u.full_name || 'Sans nom'
               return (
                 <li key={u.id}>
-                  <Card>
-                    <div className="space-y-3 p-3">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">
-                            {u.full_name || 'Sans nom'}
-                            {isMe ? <span className="text-muted-foreground"> (vous)</span> : null}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">{u.email}</p>
-                          {u.phone ? <p className="text-xs text-muted-foreground">{u.phone}</p> : null}
-                        </div>
-                        <div className="flex gap-1">
-                          {u.role === 'admin' ? (
-                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Admin</span>
-                          ) : null}
-                          {u.is_blocked ? (
-                            <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">Bloqué</span>
-                          ) : null}
-                        </div>
+                  <Card className="gap-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar name={name} size={44} />
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <p className="flex flex-wrap items-center gap-1.5 text-[16px] font-medium text-black">
+                          <span className="truncate">{name}</span>
+                          {isMe ? <span className="text-[13px] font-normal text-[var(--glow-gray)]">(vous)</span> : null}
+                          {u.role === 'admin' ? <Badge tone="blue">Admin</Badge> : null}
+                          {u.is_blocked ? <Badge tone="red">Bloqué</Badge> : null}
+                        </p>
+                        <p className="truncate text-[13px] text-[var(--glow-gray)]">{u.email}</p>
+                        {u.phone ? <p className="text-[13px] text-[var(--glow-gray)]">{u.phone}</p> : null}
                       </div>
-                      <dl className="grid grid-cols-3 gap-2 text-xs">
-                        <div>
-                          <dt className="text-muted-foreground">Solde</dt>
-                          <dd className="font-semibold tabular-nums">{formatFCFA(u.balance_xof)}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-muted-foreground">Commandes</dt>
-                          <dd className="font-semibold tabular-nums">{u.orders_total}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-muted-foreground">Annulations</dt>
-                          <dd className={cn('font-semibold tabular-nums', flagged && 'text-destructive')}>
-                            {u.cancel_ratio === null
-                              ? '—'
-                              : `${fractionToPercent(u.cancel_ratio)} % (${u.recent_user_cancels}/${u.recent_sample})`}
-                          </dd>
-                        </div>
-                      </dl>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs text-muted-foreground">Inscrit le {formatDateTime(u.created_at)}</p>
-                        {isMe ? null : (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setPanel(panel?.id === u.id && panel.kind === 'adjust' ? null : { id: u.id, kind: 'adjust' })}
-                            >
-                              Ajuster le solde
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant={u.is_blocked ? 'outline' : 'ghost'}
-                              className={u.is_blocked ? undefined : 'text-destructive'}
-                              onClick={() => setPanel(panel?.id === u.id && panel.kind === 'block' ? null : { id: u.id, kind: 'block' })}
-                            >
-                              {u.is_blocked ? 'Débloquer' : 'Bloquer'}
-                            </Button>
-                          </div>
-                        )}
+                    </div>
+                    <dl className="grid grid-cols-2 gap-2 min-[810px]:grid-cols-3">
+                      <div className="flex flex-col gap-0.5 rounded-2xl bg-[var(--glow-bg)] px-3 py-2.5">
+                        <dt className="text-[12px] text-[var(--glow-gray)]">Solde</dt>
+                        <dd className="truncate text-[15px] font-semibold text-black">{formatFCFA(u.balance_xof)}</dd>
                       </div>
+                      <div className="flex flex-col gap-0.5 rounded-2xl bg-[var(--glow-bg)] px-3 py-2.5">
+                        <dt className="text-[12px] text-[var(--glow-gray)]">Commandes</dt>
+                        <dd className="text-[15px] font-semibold text-black">{u.orders_total}</dd>
+                      </div>
+                      <div className={cn('col-span-2 flex flex-col gap-0.5 rounded-2xl px-3 py-2.5 min-[810px]:col-span-1', flagged ? 'bg-[rgb(254,242,242)]' : 'bg-[var(--glow-bg)]')}>
+                        <dt className="text-[12px] text-[var(--glow-gray)]">Annulations</dt>
+                        <dd className={cn('truncate text-[15px] font-semibold', flagged ? 'text-[rgb(185,28,28)]' : 'text-black')}>
+                          {u.cancel_ratio === null ? '—' : `${fractionToPercent(u.cancel_ratio)} %`}
+                          {u.cancel_ratio === null ? null : (
+                            <span className="ml-1 text-[12px] font-medium text-[var(--glow-gray)]">
+                              ({u.recent_user_cancels}/{u.recent_sample})
+                            </span>
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[13px] text-[var(--glow-gray)]">Inscrit le {formatDateTime(u.created_at)}</p>
+                      {isMe ? null : (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            icon={WalletCards}
+                            aria-expanded={panel?.id === u.id && panel.kind === 'adjust'}
+                            onClick={() => setPanel(panel?.id === u.id && panel.kind === 'adjust' ? null : { id: u.id, kind: 'adjust' })}
+                          >
+                            Ajuster le solde
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={u.is_blocked ? 'secondary' : 'danger'}
+                            icon={u.is_blocked ? Unlock : Ban}
+                            aria-expanded={panel?.id === u.id && panel.kind === 'block'}
+                            onClick={() => setPanel(panel?.id === u.id && panel.kind === 'block' ? null : { id: u.id, kind: 'block' })}
+                          >
+                            {u.is_blocked ? 'Débloquer' : 'Bloquer'}
+                          </Button>
+                        </div>
+                      )}
                     </div>
                     {panel?.id === u.id && panel.kind === 'adjust' ? (
                       <AdjustPanel
@@ -335,8 +314,7 @@ export default function AdminUsers() {
             })}
           </ul>
           {rows.length < total ? (
-            <Button variant="outline" className="w-full" onClick={() => void loadMore()} disabled={loadingMore}>
-              {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+            <Button className="self-center" loading={loadingMore} onClick={() => void loadMore()}>
               Afficher plus
             </Button>
           ) : null}

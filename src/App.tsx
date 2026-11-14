@@ -1,6 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import Layout from '@/components/Layout'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PageLoader from '@/components/PageLoader'
 import { useAuth } from '@/hooks/useAuth'
@@ -59,19 +58,11 @@ export default function App() {
         <Route path="/wallet/recharge/:topupId" element={<TopupStatus />} />
         <Route path="/profil" element={<Profile />} />
       </Route>
-      <Route
-        element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="/admin" element={lazyPage(<AdminLayout />)}>
-          <Route index element={lazyPage(<AdminDashboard />)} />
-          <Route path="reglages" element={lazyPage(<AdminSettings />)} />
-          <Route path="catalogue" element={lazyPage(<AdminCatalog />)} />
-          <Route path="utilisateurs" element={lazyPage(<AdminUsers />)} />
-        </Route>
+      <Route path="/admin" element={<ProtectedRoute>{lazyGlow(<AdminLayout />)}</ProtectedRoute>}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="reglages" element={<AdminSettings />} />
+        <Route path="catalogue" element={<AdminCatalog />} />
+        <Route path="utilisateurs" element={<AdminUsers />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

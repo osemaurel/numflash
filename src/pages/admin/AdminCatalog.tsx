@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Loader2, Search } from 'lucide-react'
+import { Pencil, Search } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Skeleton } from '@/components/ui/skeleton'
 import { translateAdminError } from '@/lib/admin-errors'
 import { fractionToPercent, parseIntegerInput, percentToFraction } from '@/lib/decimal'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { ServiceTile } from '../landing/ui'
+import { Badge, Button, Card, Empty, Field, PageHeader, Segmented, Switch, TextInput, inputClass } from './ui'
 
 interface ServiceRow {
   slug: string
@@ -29,30 +25,6 @@ interface CountryRow {
 type Tab = 'services' | 'countries'
 type Filter = 'all' | 'active' | 'inactive'
 const PAGE = 50
-
-function Switch({ checked, busy, onChange, label }: { checked: boolean; busy: boolean; onChange: () => void; label: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={busy}
-      onClick={onChange}
-      className={cn(
-        'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60',
-        checked ? 'bg-primary' : 'bg-muted-foreground/30',
-      )}
-    >
-      <span
-        className={cn(
-          'inline-block h-5 w-5 rounded-full bg-background shadow transition-transform',
-          checked ? 'translate-x-6' : 'translate-x-1',
-        )}
-      />
-    </button>
-  )
-}
 
 function ServiceEditor({ service, onSaved, onCancel }: { service: ServiceRow; onSaved: (s: ServiceRow) => void; onCancel: () => void }) {
   const [name, setName] = useState(service.name_fr)
@@ -82,32 +54,23 @@ function ServiceEditor({ service, onSaved, onCancel }: { service: ServiceRow; on
   }
 
   return (
-    <div className="grid gap-3 border-t p-3 sm:grid-cols-3">
-      <div className="space-y-1.5">
-        <Label htmlFor={`name-${service.slug}`}>Nom affiché</Label>
-        <Input id={`name-${service.slug}`} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
+    <div className="flex flex-col gap-4 border-t border-[var(--glow-line)] px-1 pb-1 pt-4">
+      <div className="grid grid-cols-1 gap-4 min-[810px]:grid-cols-3">
+        <Field id={`name-${service.slug}`} label="Nom affiché">
+          <TextInput id={`name-${service.slug}`} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} />
+        </Field>
+        <Field id={`margin-${service.slug}`} label="Marge spécifique (%)" hint="Vide : marge générale.">
+          <TextInput id={`margin-${service.slug}`} inputMode="decimal" placeholder="Marge générale" value={margin} onChange={(e) => setMargin(e.target.value)} />
+        </Field>
+        <Field id={`order-${service.slug}`} label="Ordre d’affichage" hint="En dessous de 100 : section « Populaires ».">
+          <TextInput id={`order-${service.slug}`} inputMode="numeric" value={order} onChange={(e) => setOrder(e.target.value)} />
+        </Field>
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`margin-${service.slug}`}>Marge spécifique (%)</Label>
-        <Input
-          id={`margin-${service.slug}`}
-          inputMode="decimal"
-          placeholder="Marge générale"
-          value={margin}
-          onChange={(e) => setMargin(e.target.value)}
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor={`order-${service.slug}`}>Ordre d'affichage</Label>
-        <Input id={`order-${service.slug}`} inputMode="numeric" value={order} onChange={(e) => setOrder(e.target.value)} />
-        <p className="text-xs text-muted-foreground">En dessous de 100 : section « Populaires ».</p>
-      </div>
-      <div className="flex gap-2 sm:col-span-3">
-        <Button size="sm" onClick={() => void save()} disabled={saving || invalid}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+      <div className="flex gap-2">
+        <Button variant="primary" size="sm" loading={saving} onClick={() => void save()} disabled={invalid}>
           Enregistrer
         </Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
           Annuler
         </Button>
       </div>
@@ -187,78 +150,84 @@ export default function AdminCatalog() {
   const loading = services === null || countries === null
 
   return (
-    <div className="space-y-4">
-      <div className="inline-flex rounded-lg border p-1" role="tablist">
-        {(['services', 'countries'] as const).map((t) => (
-          <button
-            key={t}
-            role="tab"
-            aria-selected={tab === t}
-            onClick={() => setTab(t)}
-            className={cn(
-              'h-9 rounded-md px-4 text-sm font-medium transition-colors',
-              tab === t ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {t === 'services' ? 'Services' : 'Pays'}
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-col gap-5 min-[810px]:gap-6">
+      <PageHeader
+        title="Catalogue"
+        subtitle="Activez les services et les pays proposés aux clients, et ajustez la marge par service."
+        aside={
+          <Segmented
+            label="Catalogue"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'services', label: 'Services' },
+              { value: 'countries', label: 'Pays' },
+            ]}
+          />
+        }
+      />
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input
+      <div className="flex flex-col gap-3 min-[810px]:flex-row min-[810px]:items-center">
+        <label className="relative block flex-1">
+          <span className="sr-only">Rechercher</span>
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--glow-gray)]" aria-hidden />
+          <input
+            type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={tab === 'services' ? 'Rechercher un service…' : 'Rechercher un pays…'}
-            className="pl-9"
-            aria-label="Rechercher"
+            placeholder={tab === 'services' ? 'Rechercher un service' : 'Rechercher un pays'}
+            className={`${inputClass} pl-10`}
           />
-        </div>
-        <select
+        </label>
+        <Segmented
+          label="Filtrer"
           value={filter}
-          onChange={(e) => setFilter(e.target.value as Filter)}
-          aria-label="Filtrer"
-          className="h-11 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <option value="all">Tous</option>
-          <option value="active">Actifs</option>
-          <option value="inactive">Inactifs</option>
-        </select>
+          onChange={setFilter}
+          options={[
+            { value: 'all', label: 'Tous' },
+            { value: 'active', label: 'Actifs' },
+            { value: 'inactive', label: 'Inactifs' },
+          ]}
+        />
       </div>
 
-      {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-14 w-full" />
-          ))}
-        </div>
-      ) : (
-        <>
-          <p className="text-xs text-muted-foreground">
-            {activeCount} actif{activeCount > 1 ? 's' : ''} sur {total}
-            {tab === 'services' ? ' · les services découverts par la synchronisation arrivent inactifs' : ''}
-          </p>
-          {rows.length === 0 ? (
-            <Card className="p-6 text-center text-sm text-muted-foreground">Aucun résultat.</Card>
-          ) : (
-            <ul className="space-y-2">
-              {rows.slice(0, limit).map((row) =>
-                'slug' in row ? (
-                  <li key={row.slug}>
-                    <Card>
-                      <div className="flex items-center justify-between gap-3 p-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">{row.name_fr}</p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {row.slug}
-                            {row.margin_override !== null ? ` · marge ${fractionToPercent(Number(row.margin_override))} %` : ''}
-                          </p>
+      <Card>
+        {loading ? (
+          <ul className="flex flex-col gap-2" aria-label="Chargement">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <li key={i} className="h-14 animate-pulse rounded-2xl bg-[var(--glow-bg)]" style={{ opacity: 1 - i * 0.1 }} />
+            ))}
+          </ul>
+        ) : (
+          <>
+            <p className="text-[13px] text-[var(--glow-gray)]">
+              <span className="font-semibold text-black">{activeCount}</span> actif{activeCount > 1 ? 's' : ''} sur {total}
+              {tab === 'services' ? ' · les services découverts par la synchronisation arrivent inactifs' : ''}
+            </p>
+            {rows.length === 0 ? (
+              <Empty>Aucun résultat.</Empty>
+            ) : (
+              <ul className="flex flex-col divide-y divide-[var(--glow-line)]">
+                {rows.slice(0, limit).map((row) =>
+                  'slug' in row ? (
+                    <li key={row.slug} className="py-3 first:pt-0 last:pb-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <ServiceTile name={row.name_fr} size={38} radius={10} />
+                          <div className="min-w-0">
+                            <p className="flex items-center gap-2 truncate text-[15px] font-medium text-black">
+                              <span className="truncate">{row.name_fr}</span>
+                              {row.sort_order < 100 ? <Badge tone="blue">Populaire</Badge> : null}
+                            </p>
+                            <p className="truncate text-[13px] text-[var(--glow-gray)]">
+                              {row.slug}
+                              {row.margin_override !== null ? ` · marge ${fractionToPercent(Number(row.margin_override))} %` : ''}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          <Button size="sm" variant="ghost" onClick={() => setEditing(editing === row.slug ? null : row.slug)}>
-                            Modifier
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          <Button variant="ghost" size="sm" icon={Pencil} onClick={() => setEditing(editing === row.slug ? null : row.slug)} aria-expanded={editing === row.slug}>
+                            <span className="hidden min-[810px]:inline">Modifier</span>
                           </Button>
                           <Switch
                             checked={row.is_active}
@@ -269,27 +238,27 @@ export default function AdminCatalog() {
                         </div>
                       </div>
                       {editing === row.slug ? (
-                        <ServiceEditor
-                          service={row}
-                          onCancel={() => setEditing(null)}
-                          onSaved={(s) => {
-                            setServices((list) => list?.map((x) => (x.slug === s.slug ? s : x)) ?? null)
-                            setEditing(null)
-                          }}
-                        />
+                        <div className="mt-3">
+                          <ServiceEditor
+                            service={row}
+                            onCancel={() => setEditing(null)}
+                            onSaved={(sv) => {
+                              setServices((list) => list?.map((x) => (x.slug === sv.slug ? sv : x)) ?? null)
+                              setEditing(null)
+                            }}
+                          />
+                        </div>
                       ) : null}
-                    </Card>
-                  </li>
-                ) : (
-                  <li key={row.code}>
-                    <Card className="flex items-center justify-between gap-3 p-3">
+                    </li>
+                  ) : (
+                    <li key={row.code} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="text-xl leading-none" aria-hidden>
+                        <span className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[10px] bg-[var(--glow-bg)] text-[22px] leading-none" aria-hidden>
                           {row.flag_emoji ?? '🌐'}
                         </span>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">{row.name_fr}</p>
-                          <p className="truncate text-xs text-muted-foreground">{row.code}</p>
+                          <p className="truncate text-[15px] font-medium text-black">{row.name_fr}</p>
+                          <p className="truncate text-[13px] text-[var(--glow-gray)]">{row.code}</p>
                         </div>
                       </div>
                       <Switch
@@ -298,19 +267,19 @@ export default function AdminCatalog() {
                         onChange={() => void toggleCountry(row)}
                         label={`${row.is_active ? 'Désactiver' : 'Activer'} ${row.name_fr}`}
                       />
-                    </Card>
-                  </li>
-                ),
-              )}
-            </ul>
-          )}
-          {rows.length > limit ? (
-            <Button variant="outline" className="w-full" onClick={() => setLimit((n) => n + PAGE)}>
-              Afficher plus ({rows.length - limit} restants)
-            </Button>
-          ) : null}
-        </>
-      )}
+                    </li>
+                  ),
+                )}
+              </ul>
+            )}
+            {rows.length > limit ? (
+              <Button className="self-center" onClick={() => setLimit((n) => n + PAGE)}>
+                Afficher plus ({rows.length - limit} restants)
+              </Button>
+            ) : null}
+          </>
+        )}
+      </Card>
     </div>
   )
 }

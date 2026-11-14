@@ -1,49 +1,36 @@
-import { Navigate, NavLink, Outlet } from 'react-router-dom'
-import PageLoader from '@/components/PageLoader'
-import { useProfile } from '@/hooks/useProfile'
+import { Link, Navigate } from 'react-router-dom'
+import { ArrowLeft, House, LayoutDashboard, LayoutGrid, SlidersHorizontal, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useProfile } from '@/hooks/useProfile'
+import { AppShell, sidebarIdle, sidebarItem, type NavItem } from '../client/AppShell'
 
-const TABS = [
-  { to: '/admin', label: 'Tableau de bord', end: true },
-  { to: '/admin/reglages', label: 'Réglages', end: false },
-  { to: '/admin/catalogue', label: 'Catalogue', end: false },
-  { to: '/admin/utilisateurs', label: 'Utilisateurs', end: false },
+const NAV: NavItem[] = [
+  { to: '/admin', label: 'Tableau de bord', short: 'Bord', icon: LayoutDashboard, end: true },
+  { to: '/admin/reglages', label: 'Réglages', short: 'Réglages', icon: SlidersHorizontal },
+  { to: '/admin/catalogue', label: 'Catalogue', short: 'Catalogue', icon: LayoutGrid },
+  { to: '/admin/utilisateurs', label: 'Utilisateurs', short: 'Clients', icon: Users },
 ]
 
+const TABS: NavItem[] = [...NAV, { to: '/', label: 'Espace client', short: 'Site', icon: House, end: true }]
+
+/** Administration : réservée aux comptes admin (les droits réels sont vérifiés par la base). */
 export default function AdminLayout() {
   const { loading, isAdmin } = useProfile()
 
-  if (loading) return <PageLoader />
+  if (loading) return <div className="min-h-screen bg-[#f8f7f7]" />
   if (!isAdmin) return <Navigate to="/" replace />
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold">Administration</h1>
-      </div>
-      <nav className="-mx-4 overflow-x-auto px-4" aria-label="Sections d'administration">
-        <ul className="flex min-w-max gap-2 border-b">
-          {TABS.map((tab) => (
-            <li key={tab.to}>
-              <NavLink
-                to={tab.to}
-                end={tab.end}
-                className={({ isActive }) =>
-                  cn(
-                    '-mb-px inline-flex h-10 items-center border-b-2 px-3 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground',
-                  )
-                }
-              >
-                {tab.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <Outlet />
-    </div>
+    <AppShell
+      nav={NAV}
+      tabs={TABS}
+      badge="Admin"
+      sidebarExtra={
+        <Link to="/" className={cn(sidebarItem, sidebarIdle, 'mt-3')}>
+          <ArrowLeft className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+          Espace client
+        </Link>
+      }
+    />
   )
 }
