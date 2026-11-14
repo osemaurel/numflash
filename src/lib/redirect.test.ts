@@ -33,3 +33,19 @@ describe('withRedirect', () => {
     expect(withRedirect('/inscription', null)).toBe('/inscription')
   })
 })
+
+describe('achat en attente', () => {
+  it('construit la page d’achat présélectionnée', async () => {
+    const { purchasePath } = await import('./redirect')
+    expect(purchasePath('whatsapp', 'france')).toBe('/acheter?service=whatsapp&pays=france')
+  })
+
+  it('retrouve le service depuis la destination', async () => {
+    const { pendingServiceSlug } = await import('./redirect')
+    expect(pendingServiceSlug('/acheter?service=telegram&pays=germany')).toBe('telegram')
+    expect(pendingServiceSlug('/service/whatsapp?pays=france')).toBe('whatsapp')
+    expect(pendingServiceSlug('/wallet')).toBeNull()
+    expect(pendingServiceSlug('/acheter?service=<script>')).toBeNull()
+    expect(pendingServiceSlug(null)).toBeNull()
+  })
+})

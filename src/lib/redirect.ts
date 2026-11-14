@@ -19,3 +19,18 @@ export function withRedirect(authPath: '/connexion' | '/inscription', target: st
   const safe = safeRedirect(target)
   return safe ? `${authPath}?redirect=${encodeURIComponent(safe)}` : authPath
 }
+
+/** Page d'achat présélectionnée (service, pays), destination après connexion depuis la landing. */
+export function purchasePath(serviceSlug: string, countryCode: string): string {
+  return `/acheter?service=${encodeURIComponent(serviceSlug)}&pays=${encodeURIComponent(countryCode)}`
+}
+
+/** Service d'un achat en attente (« /acheter?service=whatsapp… » ou ancien « /service/whatsapp »). */
+export function pendingServiceSlug(target: string | null | undefined): string | null {
+  if (!target) return null
+  const legacy = target.match(/^\/service\/([a-z0-9_-]+)/i)
+  if (legacy) return legacy[1]
+  if (!target.startsWith('/acheter')) return null
+  const slug = new URLSearchParams(target.split('?')[1] ?? '').get('service')
+  return slug && /^[a-z0-9_-]+$/i.test(slug) ? slug : null
+}

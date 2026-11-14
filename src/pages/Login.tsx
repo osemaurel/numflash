@@ -4,7 +4,7 @@ import { isAuthRetryableFetchError, type AuthError } from '@supabase/supabase-js
 import { Mail, ShoppingBag } from 'lucide-react'
 import { z } from 'zod'
 import { supabase } from '@/lib/supabase'
-import { safeRedirect, withRedirect } from '@/lib/redirect'
+import { pendingServiceSlug, safeRedirect, withRedirect } from '@/lib/redirect'
 import { useAuth } from '@/hooks/useAuth'
 import { AuthShell } from './auth/AuthShell'
 import { FormAlert, OrDivider, PasswordField, SubmitButton, TextField } from './auth/fields'
@@ -39,9 +39,9 @@ function loginErrorMessage(error: AuthError): string {
 
 /** « /service/whatsapp?pays=france » → « WhatsApp », pour rappeler l'achat en cours. */
 function pendingPurchase(target: string | null): string | null {
-  const match = target?.match(/^\/service\/([a-z0-9_-]+)/i)
-  if (!match) return null
-  return FALLBACK_FACTS.catalog.find((s) => s.slug === match[1])?.name ?? 'votre numéro'
+  const slug = pendingServiceSlug(target)
+  if (!slug) return null
+  return FALLBACK_FACTS.catalog.find((s) => s.slug === slug)?.name ?? 'votre numéro'
 }
 
 const FORGOT_URL = SUPPORT_WHATSAPP_URL.replace(/text=[^&]*/, `text=${encodeURIComponent('Bonjour, j’ai oublié le mot de passe de mon compte Numflash.')}`)
