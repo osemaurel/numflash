@@ -22,6 +22,8 @@ const LandingPage = lazy(() => import('@/pages/landing/LandingPage'))
 // Connexion et inscription : même design (et mêmes ressources) que la landing, donc chargée avec elles.
 const Login = lazy(() => import('@/pages/Login'))
 const Signup = lazy(() => import('@/pages/Signup'))
+// Maquette de l'accueil de l'espace client (données fictives), à valider avant intégration.
+const DashboardMockup = lazy(() => import('@/pages/dashboard/DashboardMockup'))
 
 const lazyPage = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>
 /** Pages au design de la landing : le fond reste celui de la page pendant le chargement. */
@@ -45,6 +47,7 @@ export default function App() {
       <Route path="/connexion" element={lazyGlow(<Login />)} />
       <Route path="/inscription" element={lazyGlow(<Signup />)} />
       <Route path="/glow" element={lazyPage(<GlowPage />)} />
+      <Route path="/maquette/accueil" element={lazyGlow(<DashboardMockup />)} />
       <Route path="/" element={<HomeEntry />} />
       <Route
         element={
