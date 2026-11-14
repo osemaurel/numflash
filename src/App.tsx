@@ -9,6 +9,7 @@ import Service from '@/pages/Service'
 import TopupStatus from '@/pages/TopupStatus'
 import Wallet from '@/pages/Wallet'
 import PageLoader from '@/components/PageLoader'
+import { useAuth } from '@/hooks/useAuth'
 
 // L'administration est chargée à la demande : les clients ne téléchargent jamais ce code.
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'))
@@ -18,8 +19,22 @@ const AdminCatalog = lazy(() => import('@/pages/admin/AdminCatalog'))
 const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
 // Maquette « Glow » (base du futur design) : publique, isolée et chargée à la demande.
 const GlowPage = lazy(() => import('@/pages/glow/GlowPage'))
+// Landing publique : chargée seulement pour les visiteurs non connectés.
+const LandingPage = lazy(() => import('@/pages/landing/LandingPage'))
 
 const lazyPage = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>
+
+/** « / » : la landing pour les visiteurs, le catalogue pour les clients connectés. */
+function HomeEntry() {
+  const { session, loading } = useAuth()
+  if (loading) return <div className="min-h-screen bg-background" />
+  if (!session) return <Suspense fallback={<div className="min-h-screen bg-[#f8f7f7]" />}><LandingPage /></Suspense>
+  return (
+    <Layout>
+      <Home />
+    </Layout>
+  )
+}
 
 export default function App() {
   return (
@@ -27,6 +42,7 @@ export default function App() {
       <Route path="/connexion" element={<Login />} />
       <Route path="/inscription" element={<Signup />} />
       <Route path="/glow" element={lazyPage(<GlowPage />)} />
+      <Route path="/" element={<HomeEntry />} />
       <Route
         element={
           <ProtectedRoute>
@@ -34,7 +50,6 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<Home />} />
         <Route path="/service/:slug" element={<Service />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/wallet/recharge/:topupId" element={<TopupStatus />} />

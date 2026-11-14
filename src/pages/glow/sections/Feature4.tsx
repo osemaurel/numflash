@@ -20,7 +20,7 @@ export function CharReveal({ text, className }: { text: string; className?: stri
           viewport={{ once: true, amount: 1 }}
           transition={spring(0, 0.4, i * 0.075)}
         >
-          {ch}
+          {ch === ' ' ? '\u00A0' : ch}
         </motion.span>
       ))}
     </span>
