@@ -7,8 +7,8 @@ function Set({ names, hidden = false }: { names: string[]; hidden?: boolean }) {
     <ul className="flex shrink-0 items-center gap-20 pr-20" aria-hidden={hidden || undefined}>
       {names.map((n) => (
         <li key={n} className="flex shrink-0 items-center gap-2.5">
-          <ServiceTile name={n} size={30} radius={9} />
-          <span className="font-glow-display whitespace-nowrap text-[24px] font-semibold leading-[30px] tracking-[-0.5px] text-black">{n}</span>
+          <ServiceTile name={n} size={34} radius={10} />
+          <span className="font-glow-display whitespace-nowrap text-[24px] font-semibold leading-[30px] tracking-[-0.5px] text-[rgb(40,40,40)]">{n}</span>
         </li>
       ))}
     </ul>
@@ -24,7 +24,7 @@ export default function ServiceMarquee({ facts }: { facts: LandingFacts }) {
         <p className="font-glow-display px-4 text-center text-[20px] font-medium leading-[24px] text-[var(--glow-gray)]">
           Disponible pour <span className="text-[var(--glow-blue)]">vos applications</span> préférées
         </p>
-        <div className="flex h-[71px] w-full items-center overflow-hidden opacity-60 [filter:contrast(0)_grayscale(1)]">
+        <div className="flex h-[71px] w-full items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
           <div className="glow-marquee flex w-max" style={{ ['--glow-marquee-duration' as string]: `${Math.round(setWidth / 30)}s` }}>
             <Set names={facts.services} />
             <Set names={facts.services} hidden />
