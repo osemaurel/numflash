@@ -64,6 +64,7 @@ export function useOrders(statuses: OrderStatus[], pageSize = 20) {
         .from('orders')
         .select(SELECT)
         .in('status', wanted)
+        .neq('phone', '') // réservation sans numéro : achat en cours ou remboursé aussitôt
         .order('created_at', { ascending: false })
         .order('received_at', { referencedTable: 'order_sms', ascending: false })
         .range(0, to) // une ligne de plus que demandé : indique s'il reste des commandes

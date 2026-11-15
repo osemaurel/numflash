@@ -203,7 +203,7 @@ export default function Dashboard() {
             ) : (
               <div className="flex flex-col gap-3">
                 {active.orders.map((o) => (
-                  <OrderCard key={o.id} order={o} />
+                  <OrderCard key={o.id} order={o} actions />
                 ))}
               </div>
             )}

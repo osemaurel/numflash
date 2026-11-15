@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isFivesimAccountIssue, translateFivesimError } from './fivesim-errors.ts'
+import { describeFivesimError, isFivesimAccountIssue, translateFivesimError } from './fivesim-errors.ts'
 
 describe('translateFivesimError', () => {
   it('traduit les erreurs connues, quelle que soit la casse ou les guillemets', () => {
@@ -33,5 +33,19 @@ describe('isFivesimAccountIssue', () => {
     expect(isFivesimAccountIssue('not enough user balance')).toBe(true)
     expect(isFivesimAccountIssue('', 401)).toBe(true)
     expect(isFivesimAccountIssue('no free phones')).toBe(false)
+  })
+})
+
+describe('describeFivesimError', () => {
+  it('donne une catégorie sur laquelle le code peut brancher', () => {
+    expect(describeFivesimError('no free phones').kind).toBe('no_numbers')
+    expect(describeFivesimError('bad operator').kind).toBe('bad_operator')
+    expect(describeFivesimError('order has sms').kind).toBe('has_sms')
+    expect(describeFivesimError('order expired').kind).toBe('expired')
+    expect(describeFivesimError('order not found').kind).toBe('not_found')
+    expect(describeFivesimError('not enough user balance').kind).toBe('account')
+    expect(describeFivesimError('', 403).kind).toBe('account')
+    expect(describeFivesimError('', 503).kind).toBe('unavailable')
+    expect(describeFivesimError('bizarre', 400).kind).toBe('unknown')
   })
 })

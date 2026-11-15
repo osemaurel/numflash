@@ -1,4 +1,5 @@
 import type { OrderStatus } from '@/hooks/useOrders'
+import { formatFCFA } from '@/lib/utils'
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   pending: 'En attente',
@@ -10,18 +11,38 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   refunded: 'Remboursé',
 }
 
-export type PlaceOrderResult = { ok: true; orderId: string } | { ok: false; message: string }
+export type PlaceOrderResult =
+  | { ok: true; orderId: string }
+  | { ok: false; message: string; code?: string; priceXof?: number; refunded?: boolean }
 
-/**
- * Achat d'un numéro avec le solde.
- * Le moteur d'achat (débit atomique, commande 5sim, réception des SMS) n'est pas encore en place :
- * aucun débit n'est effectué tant qu'il n'est pas activé.
- */
-export async function placeOrder(_selection: { service: string; country: string }): Promise<PlaceOrderResult> {
-  return {
-    ok: false,
-    message: 'L’achat en ligne n’est pas encore ouvert : il sera activé très prochainement. Votre solde n’a pas été débité.',
+export type OrderActionResult = { ok: true; status: OrderStatus; refunded: boolean } | { ok: false; message: string; code?: string }
+
+export interface ErrorBody {
+  error?: unknown
+  message?: unknown
+  price_xof?: unknown
+  retry_after_seconds?: unknown
+  refunded?: unknown
+}
+
+export const NETWORK_ERROR = 'Connexion impossible. Vérifiez votre connexion internet et réessayez.'
+
+export const safeInt = (v: unknown) => (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0 ? v : undefined)
+
+/** Message affiché pour un achat refusé ; le nouveau prix est mis en forme côté client (formatFCFA). */
+export function purchaseErrorMessage(body: ErrorBody | null | undefined): string {
+  const price = safeInt(body?.price_xof)
+  if (body?.error === 'price_changed' && price !== undefined) {
+    return `Le prix de ce numéro vient de changer : il est maintenant de ${formatFCFA(price)}. Confirmez pour payer ce nouveau prix.`
   }
+  return typeof body?.message === 'string' && body.message ? body.message : 'L’achat n’a pas pu aboutir. Réessayez.'
+}
+
+/** Message affiché pour une annulation ou une fin de commande refusée. */
+export function actionErrorMessage(body: ErrorBody | null | undefined): string {
+  const wait = safeInt(body?.retry_after_seconds)
+  if (body?.error === 'cancel_too_early' && wait !== undefined) return `Vous pourrez annuler cette commande dans ${mmss(wait)}.`
+  return typeof body?.message === 'string' && body.message ? body.message : 'L’opération n’a pas pu aboutir. Réessayez.'
 }
 
 /** « 4:05 » à partir d'un nombre de secondes. */

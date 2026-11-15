@@ -35,11 +35,22 @@ describe('reconcileOrders', () => {
     ])
   })
 
-  it('signale un SMS reçu chez 5sim mais encore en attente chez nous', () => {
+  it('accepte RECEIVED (numéro attribué, en attente du SMS) pour une commande en attente', () => {
     const res = reconcileOrders([remote(7, 'RECEIVED')], [local('a', 7, 'pending')], OPTS)
+    expect(res.statusMismatches).toEqual([])
+  })
+
+  it('signale une commande close chez 5sim mais encore en cours chez nous', () => {
+    const res = reconcileOrders([remote(7, 'TIMEOUT')], [local('a', 7, 'pending')], OPTS)
     expect(res.statusMismatches).toEqual([
-      { order_id: 'a', fivesim_order_id: '7', db_status: 'pending', fivesim_status: 'RECEIVED' },
+      { order_id: 'a', fivesim_order_id: '7', db_status: 'pending', fivesim_status: 'TIMEOUT' },
     ])
+  })
+
+  it('accepte finished pour une commande close après réception d’un SMS', () => {
+    expect(isStatusCompatible('TIMEOUT', 'finished')).toBe(true)
+    expect(isStatusCompatible('CANCELED', 'finished')).toBe(true)
+    expect(isStatusCompatible('PENDING', 'finished')).toBe(false)
   })
 
   it('accepte refunded pour une commande expirée ou bannie', () => {
@@ -70,5 +81,10 @@ describe('reconcileOrders', () => {
       OPTS,
     )
     expect(res.stuckWithoutFivesimId.map((o) => o.order_id)).toEqual(['ancienne'])
+  })
+
+  it('ne signale pas une réservation déjà remboursée', () => {
+    const res = reconcileOrders([], [local('remboursee', null, 'refunded', '2026-11-13T01:00:00Z')], OPTS)
+    expect(res.stuckWithoutFivesimId).toEqual([])
   })
 })

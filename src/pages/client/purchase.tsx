@@ -1,8 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { cn, formatFCFA } from '@/lib/utils'
-import { placeOrder } from '@/lib/orders'
+import { placeOrder } from '@/lib/order-api'
 import type { ServiceRow } from '@/hooks/useServices'
 import type { CatalogService } from '../landing/facts'
 import type { CountryOffer } from '../landing/buy'
@@ -32,7 +32,13 @@ export function PurchaseButton({
 }) {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  // Nouveau prix annoncé par le serveur (catalogue mis à jour entre l'affichage et l'achat).
+  const [quoted, setQuoted] = useState<number | null>(null)
   const close = useCallback(() => setOpen(false), [])
+
+  useEffect(() => {
+    setQuoted(null)
+  }, [service?.slug, country?.code, price])
 
   if (!service || !country || price === null) {
     return (
@@ -51,10 +57,16 @@ export function PurchaseButton({
     )
   }
 
+  const payable = quoted ?? price
+
   async function confirm() {
-    const res = await placeOrder({ service: service!.slug, country: country!.code })
-    if (!res.ok) return res.message
+    const res = await placeOrder({ service: service!.slug, country: country!.code, expectedPriceXof: payable })
+    if (!res.ok) {
+      if (res.code === 'price_changed' && res.priceXof) setQuoted(res.priceXof)
+      return res.message
+    }
     setOpen(false)
+    setQuoted(null)
     navigate('/numeros')
     return null
   }
@@ -71,7 +83,7 @@ export function PurchaseButton({
         service={service.name}
         country={country.name}
         flag={country.flag}
-        price={price}
+        price={payable}
         balance={balance ?? 0}
       />
     </>

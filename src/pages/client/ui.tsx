@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, Check, ChevronRight, Copy, Gift, Hourglass, Loader2, RotateCcw, ShoppingBag, SlidersHorizontal, Wallet, X, type LucideIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { cn, formatFCFA } from '@/lib/utils'
 import type { OrderRow } from '@/hooks/useOrders'
+import { useOrderRules } from '@/hooks/useOrderRules'
+import { orderAction } from '@/lib/order-api'
 import type { WalletTransactionRow } from '@/hooks/useWalletTransactions'
 import { ORDER_STATUS_LABEL, mmss, relativeTime } from '@/lib/orders'
 import { Img } from '../glow/primitives'
@@ -264,9 +267,6 @@ export function TransactionList({ transactions }: { transactions: WalletTransact
 /* Commandes                                                           */
 /* ------------------------------------------------------------------ */
 
-/** Délai avant de pouvoir annuler (réglage min_seconds_before_cancel, vérifié par la base). */
-export const CANCEL_AFTER_SECONDS = 120
-
 function useNow(active: boolean) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
@@ -303,9 +303,17 @@ function StatusChip({ status }: { status: OrderRow['status'] }) {
   )
 }
 
-export function OrderCard({ order, onCancel, onFinish }: { order: OrderRow; onCancel?: (o: OrderRow) => void; onFinish?: (o: OrderRow) => void }) {
+/**
+ * Un numéro acheté : numéro à copier, compte à rebours, code reçu (en direct via Realtime).
+ * Avec `actions`, propose « Annuler et rembourser » (après le délai minimum) et « Terminer ».
+ */
+export function OrderCard({ order, actions = false }: { order: OrderRow; actions?: boolean }) {
   const live = order.status === 'pending'
   const now = useNow(live)
+  const rules = useOrderRules()
+  const [busy, setBusy] = useState<null | 'cancel' | 'finish'>(null)
+  const [confirming, setConfirming] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
   const service = order.services?.name_fr ?? order.service_slug
   const country = order.countries?.name_fr ?? order.country_code
   const sms = [...order.order_sms].sort((a, b) => b.received_at.localeCompare(a.received_at))
@@ -314,8 +322,25 @@ export function OrderCard({ order, onCancel, onFinish }: { order: OrderRow; onCa
   const expires = order.expires_at ? new Date(order.expires_at).getTime() : null
   const left = expires ? Math.max(0, Math.round((expires - now) / 1000)) : null
   const total = expires ? Math.max(1, (expires - created) / 1000) : null
-  const cancelIn = Math.max(0, Math.ceil(CANCEL_AFTER_SECONDS - (now - created) / 1000))
+  const cancelIn = Math.max(0, Math.ceil(rules.minSecondsBeforeCancel - (now - created) / 1000))
   const closed = order.status !== 'pending' && order.status !== 'received'
+
+  async function run(action: 'cancel' | 'finish') {
+    setBusy(action)
+    setMessage(null)
+    const res = await orderAction(order.id, action)
+    setBusy(null)
+    setConfirming(false)
+    if (!res.ok) {
+      setMessage(res.message)
+      return
+    }
+    if (action === 'cancel') {
+      toast.success(res.refunded ? `Commande annulée : ${formatFCFA(order.price_xof)} recrédités sur votre solde.` : 'Commande annulée.')
+    } else {
+      toast.success('Commande terminée.')
+    }
+  }
 
   const panelPlacement = 'min-[810px]:col-start-2 min-[810px]:row-span-3 min-[810px]:row-start-1 min-[810px]:justify-center'
 
@@ -370,7 +395,11 @@ export function OrderCard({ order, onCancel, onFinish }: { order: OrderRow; onCa
               <div className="h-full rounded-full bg-[var(--glow-blue)] transition-[width] duration-1000 ease-linear" style={{ width: `${Math.min(100, (left / total) * 100)}%` }} />
             </div>
           ) : null}
-          <p className="text-[13px] leading-[18px] text-[var(--glow-gray)]">Le code s’affichera ici dès sa réception. Sans SMS avant la fin du délai, vous êtes remboursé automatiquement.</p>
+          <p className="text-[13px] leading-[18px] text-[var(--glow-gray)]">
+            {left === 0
+              ? 'Délai écoulé sans SMS : le remboursement sur votre solde est en cours.'
+              : 'Le code s’affichera ici dès sa réception. Sans SMS avant la fin du délai, vous êtes remboursé automatiquement.'}
+          </p>
         </div>
       ) : (
         <div className={cn('flex flex-col gap-1 rounded-xl bg-[var(--glow-bg)] p-3.5 text-[13px] leading-[18px] text-[var(--glow-gray)]', panelPlacement)}>
@@ -379,25 +408,63 @@ export function OrderCard({ order, onCancel, onFinish }: { order: OrderRow; onCa
         </div>
       )}
 
-      {order.status === 'received' && onFinish ? (
+      {actions && order.status === 'received' ? (
         <div className="flex items-center justify-between gap-3 min-[810px]:self-end">
           <span className="text-[13px] text-[var(--glow-gray)]">Un autre SMS peut encore arriver sur ce numéro.</span>
-          <button type="button" onClick={() => onFinish(order)} className="h-9 shrink-0 rounded-lg bg-black px-3.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-85">
+          <button
+            type="button"
+            onClick={() => void run('finish')}
+            disabled={busy !== null}
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-black px-3.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-60"
+          >
+            {busy === 'finish' ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.2} aria-hidden /> : null}
             Terminer
           </button>
         </div>
-      ) : order.status === 'pending' && onCancel ? (
-        <div className="flex justify-end min-[810px]:self-end">
-          <button
-            type="button"
-            disabled={cancelIn > 0}
-            onClick={() => onCancel(order)}
-            className="flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-[rgb(185,28,28)] ring-1 ring-inset ring-[rgb(254,202,202)] transition-colors hover:bg-[rgb(254,242,242)] disabled:cursor-not-allowed disabled:text-[rgb(170,170,170)] disabled:ring-[rgb(228,228,228)] disabled:hover:bg-transparent"
-          >
-            <RotateCcw className="h-4 w-4" strokeWidth={2} aria-hidden />
-            {cancelIn > 0 ? `Annuler dans ${mmss(cancelIn)}` : 'Annuler et rembourser'}
-          </button>
-        </div>
+      ) : actions && order.status === 'pending' ? (
+        confirming ? (
+          <div className="flex flex-wrap items-center justify-end gap-2 min-[810px]:self-end">
+            <span className="mr-auto text-[13px] font-medium text-black min-[810px]:mr-0">Annuler et être remboursé de {formatFCFA(order.price_xof)} ?</span>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              disabled={busy !== null}
+              className="h-9 rounded-lg px-3 text-[13px] font-semibold text-[var(--glow-gray)] hover:text-black"
+            >
+              Non
+            </button>
+            <button
+              type="button"
+              onClick={() => void run('cancel')}
+              disabled={busy !== null}
+              className="flex h-9 items-center gap-1.5 rounded-lg bg-[rgb(185,28,28)] px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-[rgb(160,24,24)] disabled:opacity-60"
+            >
+              {busy === 'cancel' ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2.2} aria-hidden /> : null}
+              Oui, annuler
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-end min-[810px]:self-end">
+            <button
+              type="button"
+              disabled={cancelIn > 0 || busy !== null}
+              onClick={() => {
+                setMessage(null)
+                setConfirming(true)
+              }}
+              className="flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold text-[rgb(185,28,28)] ring-1 ring-inset ring-[rgb(254,202,202)] transition-colors hover:bg-[rgb(254,242,242)] disabled:cursor-not-allowed disabled:text-[rgb(170,170,170)] disabled:ring-[rgb(228,228,228)] disabled:hover:bg-transparent"
+            >
+              <RotateCcw className="h-4 w-4" strokeWidth={2} aria-hidden />
+              {cancelIn > 0 ? `Annuler dans ${mmss(cancelIn)}` : 'Annuler et rembourser'}
+            </button>
+          </div>
+        )
+      ) : null}
+
+      {message ? (
+        <p role="alert" className="rounded-xl bg-[rgb(254,242,242)] px-3.5 py-2.5 text-[13px] leading-[18px] text-[rgb(153,27,27)] ring-1 ring-inset ring-[rgb(254,202,202)] min-[810px]:col-span-2">
+          {message}
+        </p>
       ) : null}
     </article>
   )
@@ -456,12 +523,15 @@ export function ConfirmPurchase({
     if (message) setError(message)
   }
 
+  const short = balance < price
   const rows: [string, ReactNode][] = [
     ['Service', service],
     ['Pays', `${flag} ${country}`],
     ['Prix du numéro', <span className="font-semibold text-black">{formatFCFA(price)}</span>],
     ['Solde actuel', formatFCFA(balance)],
-    ['Solde après l’achat', <span className="font-semibold text-black">{formatFCFA(balance - price)}</span>],
+    short
+      ? ['Il vous manque', <span className="font-semibold text-[rgb(185,28,28)]">{formatFCFA(price - balance)}</span>]
+      : ['Solde après l’achat', <span className="font-semibold text-black">{formatFCFA(balance - price)}</span>],
   ]
 
   return (
@@ -497,10 +567,16 @@ export function ConfirmPurchase({
           </p>
         ) : null}
         <div className="flex flex-col gap-2">
-          <button ref={confirmRef} type="button" onClick={() => void confirm()} disabled={busy} className={primaryButton}>
-            {busy ? <Loader2 className="h-[18px] w-[18px] animate-spin" strokeWidth={2.2} aria-hidden /> : null}
-            {busy ? 'Achat en cours…' : `Payer ${formatFCFA(price)}`}
-          </button>
+          {short ? (
+            <Link to="/wallet" onClick={onClose} className={primaryButton}>
+              Recharger mon solde
+            </Link>
+          ) : (
+            <button ref={confirmRef} type="button" onClick={() => void confirm()} disabled={busy} className={primaryButton}>
+              {busy ? <Loader2 className="h-[18px] w-[18px] animate-spin" strokeWidth={2.2} aria-hidden /> : null}
+              {busy ? 'Achat en cours…' : `Payer ${formatFCFA(price)}`}
+            </button>
+          )}
           <button type="button" onClick={onClose} className="h-11 rounded-xl text-[15px] font-medium text-[var(--glow-gray)] hover:text-black">
             Annuler
           </button>

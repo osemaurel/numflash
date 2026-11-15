@@ -81,7 +81,7 @@ export default function Numbers() {
         ) : (
           <div className="flex flex-col gap-3">
             {orders.map((o) => (
-              <OrderCard key={o.id} order={o} />
+              <OrderCard key={o.id} order={o} actions />
             ))}
             {hasMore ? (
               <button type="button" onClick={loadMore} className={cn(secondaryButton, 'self-center')}>

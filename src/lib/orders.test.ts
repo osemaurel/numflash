@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mmss, placeOrder, relativeTime } from './orders'
+import { actionErrorMessage, mmss, purchaseErrorMessage, relativeTime } from './orders'
 
 describe('mmss', () => {
   it('formate un compte à rebours', () => {
@@ -23,9 +23,18 @@ describe('relativeTime', () => {
   })
 })
 
-describe('placeOrder', () => {
-  it('ne débite rien tant que l’achat en ligne n’est pas ouvert', async () => {
-    const res = await placeOrder({ service: 'whatsapp', country: 'france' })
-    expect(res.ok).toBe(false)
+describe('messages d’erreur', () => {
+  it('annonce le nouveau prix en FCFA', () => {
+    expect(purchaseErrorMessage({ error: 'price_changed', message: 'x', price_xof: 3500 })).toBe(
+      'Le prix de ce numéro vient de changer : il est maintenant de 3\u202f500 FCFA. Confirmez pour payer ce nouveau prix.',
+    )
+  })
+  it('reprend le message du serveur sinon', () => {
+    expect(purchaseErrorMessage({ error: 'no_stock', message: 'Aucun numéro.' })).toBe('Aucun numéro.')
+    expect(purchaseErrorMessage(null)).toMatch(/n’a pas pu aboutir/)
+  })
+  it('donne le délai restant avant de pouvoir annuler', () => {
+    expect(actionErrorMessage({ error: 'cancel_too_early', message: 'x', retry_after_seconds: 75 })).toBe('Vous pourrez annuler cette commande dans 1:15.')
+    expect(actionErrorMessage({ error: 'has_sms', message: 'Un SMS a déjà été reçu.' })).toBe('Un SMS a déjà été reçu.')
   })
 })

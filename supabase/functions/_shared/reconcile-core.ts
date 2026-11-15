@@ -15,15 +15,17 @@ export interface DbOrderLite {
   created_at: string
 }
 
-// Statuts locaux compatibles avec chaque statut 5sim. « refunded » est l'état final local
-// après remboursement d'une commande annulée, expirée ou bannie.
+// Statuts locaux compatibles avec chaque statut 5sim. Chez 5sim, RECEIVED signifie « numéro
+// attribué, en attente du SMS » : la réception d'un SMS se lit dans la liste sms, pas dans le statut.
+// Une commande close après réception d'un SMS est « finished » localement, quel que soit son statut 5sim.
+// « refunded » est l'état local d'une réservation remboursée avant l'attribution d'un numéro.
 const COMPATIBLE: Record<string, DbOrderStatus[]> = {
   PENDING: ['pending'],
-  RECEIVED: ['received'],
+  RECEIVED: ['pending', 'received'],
   FINISHED: ['finished'],
-  CANCELED: ['canceled', 'refunded'],
-  TIMEOUT: ['timeout', 'refunded'],
-  BANNED: ['banned', 'refunded'],
+  CANCELED: ['canceled', 'finished', 'refunded'],
+  TIMEOUT: ['timeout', 'finished', 'refunded'],
+  BANNED: ['banned', 'finished', 'refunded'],
 }
 
 export interface StatusMismatch {
@@ -73,8 +75,9 @@ export function reconcileOrders(
 
   for (const order of dbOrders) {
     if (order.fivesim_order_id == null) {
+      // Seule une réservation encore en attente est bloquée ; une réservation remboursée est close.
       const age = opts.now.getTime() - new Date(order.created_at).getTime()
-      if (inWindow(order.created_at) && age > opts.stuckAfterMs) {
+      if (order.status === 'pending' && inWindow(order.created_at) && age > opts.stuckAfterMs) {
         result.stuckWithoutFivesimId.push({ order_id: order.id, status: order.status, created_at: order.created_at })
       }
       continue
