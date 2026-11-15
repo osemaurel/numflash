@@ -63,7 +63,7 @@ function QuickBuy({ balance }: { balance: number | null }) {
                       on ? 'shadow-[0_8px_20px_-8px_rgba(0,133,238,0.45)] ring-2 ring-[var(--glow-blue)]' : 'ring-1 ring-inset ring-[rgb(232,232,232)] hover:ring-[rgb(205,205,205)]',
                     )}
                   >
-                    <ServiceTile name={s.name} size={34} radius={10} />
+                    <ServiceTile name={s.name} slug={s.slug} size={34} radius={10} />
                     <span className="w-full truncate px-1 text-center text-[11px] font-medium leading-[13px] text-black">{s.name}</span>
                   </button>
                 </li>
@@ -128,7 +128,7 @@ function QuickBuy({ balance }: { balance: number | null }) {
         <div className="flex min-w-0 flex-col gap-0.5">
           {service ? (
             <span className="flex min-w-0 items-center gap-2 text-[15px] font-medium text-black">
-              <ServiceTile name={service.name} size={22} radius={6} />
+              <ServiceTile name={service.name} slug={service.slug} size={22} radius={6} />
               <span className="truncate">
                 {service.name}
                 {country ? ` · ${country.flag} ${country.name}` : ''}
@@ -226,7 +226,7 @@ export default function Dashboard() {
                   const service = c.orders?.services?.name_fr ?? c.orders?.service_slug ?? 'Service'
                   return (
                     <li key={c.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                      <ServiceTile name={service} size={38} radius={10} />
+                      <ServiceTile name={service} slug={c.orders?.service_slug} size={38} radius={10} />
                       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className="truncate text-[15px] font-medium leading-[19px] text-black">{service}</span>
                         <span className="truncate text-[13px] leading-[17px] text-[var(--glow-gray)]">

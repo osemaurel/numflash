@@ -60,7 +60,7 @@ function ServiceGrid({ catalog, selected, onSelect }: { catalog: CatalogService[
                   : 'ring-1 ring-inset ring-[rgb(235,235,235)] hover:ring-[rgb(205,205,205)]',
               )}
             >
-              <ServiceTile name={s.name} size={40} radius={11} />
+              <ServiceTile name={s.name} slug={s.slug} size={40} radius={11} />
               <span className="w-full truncate text-center text-[13px] font-medium leading-[15.6px] tracking-[-0.26px] text-black">{s.name}</span>
               {active ? (
                 <span className="absolute right-1.5 top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[var(--glow-blue)]">
@@ -274,7 +274,7 @@ export function SelectionSummary({ service, country }: { service: CatalogService
     <p className="flex min-h-7 items-center gap-2 text-[15px] font-medium leading-[22.5px] text-black">
       {service ? (
         <>
-          <ServiceTile name={service.name} size={24} radius={7} />
+          <ServiceTile name={service.name} slug={service.slug} size={24} radius={7} />
           <span className="truncate">{service.name}</span>
           {country ? (
             <>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import { cn, formatFCFA } from '@/lib/utils'
 import { Icon } from '../glow/primitives'
+import { brandFor } from './brands'
 
 /* ------------------------------------------------------------------ */
 /* Marque                                                              */
@@ -100,7 +101,7 @@ export function Pill({ icon: I, children, tone = 'blue', className }: { icon: Lu
 /* Services                                                            */
 /* ------------------------------------------------------------------ */
 
-/** Couleurs de repère des services (pastilles avec initiale, sans reprendre les logos déposés). */
+/** Pastilles de secours (initiale sur la couleur du service) quand aucun logo n'est disponible. */
 export const SERVICE_STYLE: Record<string, { bg: string; letter: string }> = {
   WhatsApp: { bg: '#25D366', letter: 'W' },
   Telegram: { bg: '#2AABEE', letter: 'T' },
@@ -116,7 +117,40 @@ export const SERVICE_STYLE: Record<string, { bg: string; letter: string }> = {
   Tinder: { bg: '#FE3C72', letter: 't' },
 }
 
-export function ServiceTile({ name, size = 38, radius = 8, className }: { name: string; size?: number; radius?: number; className?: string }) {
+/**
+ * Pastille d'un service : son logo (brands.ts) quand il est connu, sinon son initiale.
+ * `slug` (identifiant 5sim) est prioritaire sur le nom affiché pour retrouver le logo.
+ */
+export function ServiceTile({
+  name,
+  slug,
+  size = 38,
+  radius = 8,
+  className,
+}: {
+  name: string
+  slug?: string | null
+  size?: number
+  radius?: number
+  className?: string
+}) {
+  const brand = brandFor(slug) ?? brandFor(name)
+  if (brand) {
+    const box = Math.round(size * brand.scale)
+    return (
+      <span
+        aria-hidden
+        className={cn('flex shrink-0 items-center justify-center overflow-hidden', brand.ring && 'ring-1 ring-inset ring-[rgb(228,228,228)]', className)}
+        style={{ width: size, height: size, borderRadius: radius, background: brand.bg }}
+      >
+        <svg viewBox="0 0 24 24" width={box} height={box} aria-hidden focusable="false">
+          {brand.layers.map((l, i) => (
+            <path key={i} d={l.d} fill={l.fill} transform={l.dx || l.dy ? `translate(${l.dx ?? 0} ${l.dy ?? 0})` : undefined} />
+          ))}
+        </svg>
+      </span>
+    )
+  }
   const s = SERVICE_STYLE[name] ?? { bg: 'var(--glow-blue)', letter: name.charAt(0) }
   return (
     <span

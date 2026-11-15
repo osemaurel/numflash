@@ -347,7 +347,7 @@ export function OrderCard({ order, actions = false }: { order: OrderRow; actions
   return (
     <article className="grid grid-cols-1 gap-3 rounded-2xl p-3.5 ring-1 ring-inset ring-[var(--glow-line)] min-[810px]:grid-cols-2 min-[810px]:grid-rows-[auto_auto_1fr] min-[810px]:gap-x-5 min-[810px]:gap-y-3 min-[810px]:p-4">
       <div className="flex items-start gap-3">
-        <ServiceTile name={service} size={42} radius={12} />
+        <ServiceTile name={service} slug={order.service_slug} size={42} radius={12} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="truncate text-[16px] font-medium leading-[20px] tracking-[-0.32px] text-black">{service}</span>
           <span className="truncate text-[13px] leading-[17px] text-[var(--glow-gray)]">
