@@ -13,15 +13,14 @@ import {
   flag,
   isRedirectNetwork,
   localPart,
-  networkStyle,
   splitFullName,
   toE164,
   type PaymentCountry,
-  type PaymentNetwork,
 } from '@/lib/payment'
 import { fetchPaymentOptions, payTopup } from '@/lib/payment-api'
 import { TextField } from '../auth/fields'
 import { Wordmark } from '../landing/ui'
+import { NetworkLogo } from './NetworkLogo'
 import { primaryButton, secondaryButton } from './ui'
 import '../glow/glow.css'
 
@@ -70,19 +69,6 @@ function Section({ step, title, children }: { step: string; title: string; child
       </h2>
       {children}
     </section>
-  )
-}
-
-function NetworkBadge({ network, size = 36 }: { network: PaymentNetwork; size?: number }) {
-  const s = networkStyle(network.code, network.name)
-  return (
-    <span
-      aria-hidden
-      className="font-glow-display flex shrink-0 items-center justify-center rounded-[10px] font-bold"
-      style={{ width: size, height: size, background: s.bg, color: s.fg, fontSize: size * 0.44 }}
-    >
-      {s.letter}
-    </span>
   )
 }
 
@@ -354,7 +340,7 @@ export default function Checkout() {
                             on ? 'ring-2 ring-[var(--glow-blue)] shadow-[0_8px_20px_-14px_rgba(0,133,238,0.8)]' : 'ring-1 ring-inset ring-[rgb(228,228,228)] hover:ring-[rgb(200,200,200)]',
                           )}
                         >
-                          <NetworkBadge network={n} />
+                          <NetworkLogo code={n.code} name={n.name} size={38} />
                           <span className="flex min-w-0 flex-col">
                             <span className="text-[15px] font-medium leading-[19px] tracking-[-0.2px] text-black">{n.name}</span>
                             {n.otp_required ? (

@@ -205,3 +205,31 @@ export function networkLabel(code: string | null | undefined): string {
   if (!code) return '—'
   return NETWORK_NAMES.find(([re]) => re.test(code))?.[1] ?? code
 }
+
+export interface NetworkLogoInfo {
+  src: string
+  /** « cover » : icône carrée pleine ; « contain » : logo posé sur fond blanc. */
+  fit: 'cover' | 'contain'
+  /** Agrandissement de l'image quand le fichier officiel comporte une marge (ex. 1.3). */
+  zoom?: number
+}
+
+// Logos officiels des opérateurs (dossier public/operators). Wizall et Mobi Cash n'en ont pas encore :
+// ils gardent la pastille à initiale.
+const NETWORK_LOGOS: [RegExp, NetworkLogoInfo][] = [
+  [/^mtn/, { src: '/operators/mtn.svg', fit: 'cover' }],
+  [/^moov/, { src: '/operators/moov.png', fit: 'cover', zoom: 1.3 }],
+  [/^orange/, { src: '/operators/orange.svg', fit: 'cover' }],
+  [/^wave/, { src: '/operators/wave.png', fit: 'cover' }],
+  [/^celtiis/, { src: '/operators/celtiis.svg', fit: 'cover' }],
+  [/^airtel/, { src: '/operators/airtel.svg', fit: 'cover' }],
+  [/^djamo/, { src: '/operators/djamo.png', fit: 'cover' }],
+  [/^expresso/, { src: '/operators/expresso.png', fit: 'contain', zoom: 1.12 }],
+  [/^freemoney/, { src: '/operators/mixx-by-yas.png', fit: 'cover' }],
+  [/^paydunya/, { src: '/operators/paydunya.png', fit: 'contain' }],
+]
+
+export function networkLogo(code: string | null | undefined): NetworkLogoInfo | null {
+  if (!code) return null
+  return NETWORK_LOGOS.find(([re]) => re.test(code))?.[1] ?? null
+}

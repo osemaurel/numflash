@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowDownLeft, Clock, CreditCard, History, RefreshCw, Smartphone, UserRound, Users, Wallet, XCircle } from 'lucide-react'
-import { flag, networkLabel, networkStyle } from '@/lib/payment'
+import { flag, networkLabel } from '@/lib/payment'
 import { formatFCFA } from '@/lib/utils'
+import { NetworkLogo } from '../client/NetworkLogo'
 import { Button, Card, Kpi, Notice, PageHeader, Segmented } from './ui'
 import {
   DataTable,
@@ -93,12 +94,9 @@ function TopupStatusPill({ status }: { status: TopupStatus }) {
 
 function NetworkChip({ code }: { code: string | null }) {
   if (!code) return <span className="text-[var(--glow-gray)]">Page de paiement</span>
-  const s = networkStyle(code, networkLabel(code))
   return (
     <span className="flex items-center gap-2 whitespace-nowrap">
-      <span className="font-glow-display flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[11px] font-bold" style={{ background: s.bg, color: s.fg }} aria-hidden>
-        {s.letter}
-      </span>
+      <NetworkLogo code={code} name={networkLabel(code)} size={24} radius={6} />
       {networkLabel(code)}
     </span>
   )
