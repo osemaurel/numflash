@@ -25,18 +25,24 @@ async function readError(error: unknown) {
 
 const messageOf = (body: ErrorBody | null, fallback: string) => (typeof body?.message === 'string' && body.message ? body.message : fallback)
 
-let optionsCache: { countries: PaymentCountry[]; at: number } | null = null
+export interface PaymentOptions {
+  countries: PaymentCountry[]
+  /** L'e-mail du client reste chez Numflash (le prestataire reçoit l'adresse fixée par l'admin). */
+  emailPrivate: boolean
+}
+
+let optionsCache: { options: PaymentOptions; at: number } | null = null
 
 /** Pays et réseaux Mobile Money disponibles (gardés 10 min en mémoire). */
-export async function fetchPaymentOptions(): Promise<PaymentCountry[]> {
-  if (optionsCache && Date.now() - optionsCache.at < 10 * 60_000) return optionsCache.countries
-  const { data, error } = await supabase.functions.invoke<{ countries: PaymentCountry[] }>('payment-options', { body: {} })
+export async function fetchPaymentOptions(): Promise<PaymentOptions> {
+  if (optionsCache && Date.now() - optionsCache.at < 10 * 60_000) return optionsCache.options
+  const { data, error } = await supabase.functions.invoke<{ countries: PaymentCountry[]; email_private?: boolean }>('payment-options', { body: {} })
   if (error || !data) {
     const { body } = await readError(error)
     throw new Error(messageOf(body, 'Les moyens de paiement sont momentanément indisponibles. Réessayez dans quelques instants.'))
   }
-  optionsCache = { countries: data.countries ?? [], at: Date.now() }
-  return optionsCache.countries
+  optionsCache = { options: { countries: data.countries ?? [], emailPrivate: data.email_private === true }, at: Date.now() }
+  return optionsCache.options
 }
 
 export interface PayInput {

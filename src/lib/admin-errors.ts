@@ -14,6 +14,7 @@ const SETTING_LABELS: Record<string, string> = {
   cancel_ratio_alert_threshold: "Seuil d'alerte d'annulation",
   cancel_ratio_window: 'Fenêtre de calcul',
   report_timezone: 'Fuseau horaire',
+  saspay_customer_email: 'E-mail transmis au prestataire de paiement',
   amount_xof: 'Montant',
   name_fr: 'Nom',
   sort_order: "Ordre d'affichage",

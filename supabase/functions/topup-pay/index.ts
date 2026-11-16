@@ -9,6 +9,7 @@ import { corsHeaders } from '../_shared/cors.ts'
 import { authenticatedUserId, describeError, fail, json, requestMeta, serviceClient } from '../_shared/http.ts'
 import { xofToDecimalString } from '../_shared/money.ts'
 import { loadPaymentOptions } from '../_shared/payment-cache.ts'
+import { providerContactEmail } from '../_shared/provider-contact.ts'
 import { findNetwork } from '../_shared/payment-options.ts'
 import { createSaspayClient, SaspayError } from '../_shared/saspay-client.ts'
 import { describeSaspayError } from '../_shared/saspay-errors.ts'
@@ -92,6 +93,10 @@ Deno.serve(async (req: Request) => {
       })
     }
 
+    // Confidentialité : le prestataire reçoit l'adresse fixée par l'administrateur, jamais celle du client
+    // (tant qu'elle n'est pas fixée, l'adresse saisie par le client est utilisée).
+    const contactEmail = await providerContactEmail(admin)
+
     // 4. Retry réseau d'une même demande : on ne crée pas de deuxième recharge.
     const { data: existing } = await admin
       .from('topups')
@@ -146,6 +151,8 @@ Deno.serve(async (req: Request) => {
           payer_country: input.country,
           payer_network: input.network,
           payer_phone: input.phone,
+          payer_name: `${input.first_name} ${input.last_name}`.slice(0, 130),
+          payer_email: input.email.toLowerCase(),
         })
         .select(TOPUP_COLUMNS)
         .single()
@@ -170,7 +177,7 @@ Deno.serve(async (req: Request) => {
           country: input.country,
           network: input.network,
           description: `Recharge Numflash de ${input.amount_xof} FCFA`,
-          customer: { email: input.email, first_name: input.first_name, last_name: input.last_name, phone: input.phone },
+          customer: { email: contactEmail ?? input.email, first_name: input.first_name, last_name: input.last_name, phone: input.phone },
           metadata: { topup_id: topup.id, user_id: userId },
           fee_charge_mode: 'ADD_ON',
           ...(input.otp ? { otp: input.otp } : {}),
@@ -239,6 +246,7 @@ Deno.serve(async (req: Request) => {
       flow: checkoutUrl ? 'redirect' : 'push',
       redirect_host: checkoutUrl ? new URL(checkoutUrl).hostname : null,
       prepayment_otp: Boolean(input.otp),
+      customer_email_masked: contactEmail !== null,
     })
     return json({ topup_id: topup.id, checkout_url: checkoutUrl, confirm_otp: network.confirm_otp }, 200)
   } catch (err) {

@@ -7,6 +7,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'zod'
 import { corsHeaders } from '../_shared/cors.ts'
 import { xofToDecimalString } from '../_shared/money.ts'
+import { providerContactEmail } from '../_shared/provider-contact.ts'
 import { createSaspayClient } from '../_shared/saspay-client.ts'
 import { resolveAppOrigin, sanitizeCheckoutUrl } from '../_shared/urls.ts'
 
@@ -165,7 +166,7 @@ Deno.serve(async (req: Request) => {
         {
           amount: xofToDecimalString(amount_xof),
           currency: 'XOF',
-          customer_email: user.email ?? '',
+          customer_email: (await providerContactEmail(admin)) ?? user.email ?? '',
           customer_name: profile.full_name || user.email || 'Client Numflash',
           ...(profile.phone ? { customer_phone: profile.phone } : {}),
           description: `Recharge Numflash de ${amount_xof} FCFA`,

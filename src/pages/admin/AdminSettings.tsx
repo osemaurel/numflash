@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Save } from 'lucide-react'
+import { ArrowRight, Save, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { translateAdminError } from '@/lib/admin-errors'
 import { fractionToPercent, normalizeDecimal, parseIntegerInput, percentToFraction } from '@/lib/decimal'
 import { computePriceXof, type PricingSettings } from '@/lib/pricing'
 import { supabase } from '@/lib/supabase'
 import { cn, formatFCFA } from '@/lib/utils'
-import { Button, Card, Field, PageHeader, Select, TextInput } from './ui'
+import { Button, Card, Field, Notice, PageHeader, Select, TextInput } from './ui'
 
 type Stored = Record<string, unknown>
 
@@ -23,6 +23,7 @@ interface Form {
   cancel_ratio_window: string
   fivesim_low_balance_threshold: string
   report_timezone: string
+  saspay_customer_email: string
 }
 
 interface ServiceOption {
@@ -73,6 +74,7 @@ function toForm(s: Stored): Form {
     cancel_ratio_window: String(s.cancel_ratio_window),
     fivesim_low_balance_threshold: showDecimal(s.fivesim_low_balance_threshold),
     report_timezone: String(s.report_timezone ?? 'Africa/Lagos'),
+    saspay_customer_email: typeof s.saspay_customer_email === 'string' ? s.saspay_customer_email : '',
   }
 }
 
@@ -132,6 +134,12 @@ function parseForm(form: Form, stored: Stored): Parsed {
   }
   decimalField('fivesim_low_balance_threshold', normalizeDecimal(form.fivesim_low_balance_threshold), 'Seuil')
   if (form.report_timezone !== stored.report_timezone) changes.report_timezone = form.report_timezone
+  const contactEmail = form.saspay_customer_email.trim().toLowerCase()
+  if (contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contactEmail)) {
+    errors.saspay_customer_email = 'Adresse e-mail invalide.'
+  } else if (contactEmail !== (typeof stored.saspay_customer_email === 'string' ? stored.saspay_customer_email : '')) {
+    changes.saspay_customer_email = contactEmail
+  }
 
   const draftPricing =
     fx && margin !== null && step && step > 0 && floor !== null
@@ -302,6 +310,35 @@ export default function AdminSettings() {
             <Field id="tiers" label="Paliers (FCFA)" hint="Séparés par des virgules, de 100 à 1 000 000, 12 au maximum." error={parsed.errors.topup_tiers}>
               <TextInput id="tiers" value={form.topup_tiers} onChange={set('topup_tiers')} aria-invalid={Boolean(parsed.errors.topup_tiers)} />
             </Field>
+          </Card>
+
+          <Card title="Confidentialité des paiements">
+            <p className={lead}>
+              Le prestataire de paiement (SasPay) reçoit cette adresse à la place de celle de vos clients : ses confirmations et notifications
+              arrivent ici, et vos clients ne sont jamais contactés par lui. Leur nom et leur numéro restent transmis, ils sont nécessaires au paiement.
+            </p>
+            <Field
+              id="saspay-email"
+              label="E-mail transmis au prestataire de paiement"
+              hint="Les e-mails de SasPay pour chaque recharge seront envoyés à cette adresse."
+              error={parsed.errors.saspay_customer_email}
+            >
+              <TextInput
+                id="saspay-email"
+                type="email"
+                inputMode="email"
+                autoComplete="off"
+                placeholder="paiements@votre-domaine.com"
+                value={form.saspay_customer_email}
+                onChange={set('saspay_customer_email')}
+                aria-invalid={Boolean(parsed.errors.saspay_customer_email)}
+              />
+            </Field>
+            {!(typeof stored.saspay_customer_email === 'string' && stored.saspay_customer_email) ? (
+              <Notice tone="amber" icon={ShieldAlert}>
+                Aucune adresse n’est fixée : tant que ce champ est vide, SasPay reçoit l’e-mail saisi par le client.
+              </Notice>
+            ) : null}
           </Card>
 
           <Card title="Anti-abus">

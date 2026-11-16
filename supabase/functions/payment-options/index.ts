@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { corsHeaders } from '../_shared/cors.ts'
 import { authenticatedUserId, describeError, fail, json, serviceClient } from '../_shared/http.ts'
 import { loadPaymentOptions } from '../_shared/payment-cache.ts'
+import { providerContactEmail } from '../_shared/provider-contact.ts'
 import { createSaspayClient } from '../_shared/saspay-client.ts'
 
 const Body = z.object({}).strict()
@@ -25,7 +26,9 @@ Deno.serve(async (req: Request) => {
 
   try {
     const countries = await loadPaymentOptions(admin, createSaspayClient({ secretKey, timeoutMs: 10_000 }))
-    return json({ countries }, 200)
+    // Indique à la page de paiement si l'e-mail du client reste chez Numflash.
+    const emailPrivate = (await providerContactEmail(admin)) !== null
+    return json({ countries, email_private: emailPrivate }, 200)
   } catch (err) {
     await admin.from('audit_log').insert({
       actor: 'edge:payment-options',

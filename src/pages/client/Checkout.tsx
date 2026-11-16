@@ -99,6 +99,7 @@ export default function Checkout() {
   const { tiers, loading: tiersLoading } = useTopupTiers()
 
   const [countries, setCountries] = useState<PaymentCountry[] | null>(null)
+  const [emailPrivate, setEmailPrivate] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0)
 
@@ -128,7 +129,11 @@ export default function Checkout() {
     let active = true
     setLoadError(null)
     fetchPaymentOptions()
-      .then((c) => active && setCountries(c))
+      .then((o) => {
+        if (!active) return
+        setCountries(o.countries)
+        setEmailPrivate(o.emailPrivate)
+      })
       .catch((e: unknown) => active && setLoadError(e instanceof Error ? e.message : 'Les moyens de paiement sont indisponibles.'))
     return () => {
       active = false
@@ -295,7 +300,23 @@ export default function Checkout() {
                 <TextField id="prenom" label="Prénom" icon={UserRound} autoComplete="given-name" value={first} onChange={(e) => setFirst(e.target.value)} error={errors.first} maxLength={60} />
                 <TextField id="nom" label="Nom" icon={UserRound} autoComplete="family-name" value={last} onChange={(e) => setLast(e.target.value)} error={errors.last} maxLength={60} />
               </div>
-              <TextField id="email" label="E-mail" icon={Mail} type="email" inputMode="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} maxLength={254} />
+              <TextField
+                id="email"
+                label="E-mail"
+                icon={Mail}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                error={errors.email}
+                maxLength={254}
+                hint={
+                  emailPrivate ? (
+                    <p className="text-[13px] leading-[18px] text-[var(--glow-gray)]">Votre e-mail reste chez Numflash : il n’est pas communiqué au prestataire de paiement.</p>
+                  ) : undefined
+                }
+              />
             </Section>
 
             <Section step="2" title="Paiement Mobile Money">

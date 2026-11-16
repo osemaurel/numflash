@@ -72,6 +72,8 @@ interface TopupDetail {
     payer_country: string | null
     payer_network: string | null
     payer_phone: string | null
+    payer_name: string | null
+    payer_email: string | null
     saspay_payment_id: string | null
     saspay_session_id: string | null
     idempotency_key: string
@@ -163,6 +165,8 @@ function TopupPanel({ id, reloadKey }: { id: string; reloadKey: number }) {
         <DetailRow label="Pays" value={t.payer_country ? `${flag(t.payer_country)} ${countryName(t.payer_country)}` : '—'} />
         <DetailRow label="Réseau" value={t.payer_network ? <NetworkChip code={t.payer_network} /> : '—'} />
         <DetailRow label="Numéro payeur" value={t.payer_phone ?? '—'} mono copy={t.payer_phone} />
+        {t.payer_name ? <DetailRow label="Nom saisi" value={t.payer_name} /> : null}
+        {t.payer_email ? <DetailRow label="E-mail saisi" value={t.payer_email} copy={t.payer_email} /> : null}
       </DetailSection>
 
       <DetailSection title="Client" icon={UserRound}>
