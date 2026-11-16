@@ -4,6 +4,7 @@
 const DEFAULT_APP_URL = 'https://numflash-rose.vercel.app'
 
 const ALLOWED_ORIGINS: RegExp[] = [
+  /^https:\/\/(www\.)?numflash\.com$/,
   /^https:\/\/numflash-rose\.vercel\.app$/,
   /^https:\/\/numflash(-[a-z0-9-]+)?-osecapoch-gmailcoms-projects\.vercel\.app$/,
   /^http:\/\/localhost:\d{2,5}$/,
@@ -23,6 +24,20 @@ export function sanitizeCheckoutUrl(value: unknown): string | null {
     const url = new URL(value)
     if (url.protocol !== 'https:') return null
     if (url.hostname !== 'saspay.me' && !url.hostname.endsWith('.saspay.me')) return null
+    return url.toString()
+  } catch {
+    return null
+  }
+}
+
+// Paiement direct : certains opérateurs (Wave, Djamo…) valident sur leur propre page. L'adresse
+// vient de la réponse serveur à serveur de SasPay ; on n'accepte que du https sans identifiants.
+export function sanitizeProviderUrl(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return ''
+  if (typeof value !== 'string' || value.length > 2048) return null
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'https:' || url.username || url.password) return null
     return url.toString()
   } catch {
     return null

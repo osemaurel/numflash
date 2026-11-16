@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveAppOrigin, sanitizeCheckoutUrl } from './urls.ts'
+import { resolveAppOrigin, sanitizeCheckoutUrl, sanitizeProviderUrl } from './urls.ts'
 
 describe('resolveAppOrigin', () => {
   it('garde une origine connue (production ou preview Vercel)', () => {
@@ -34,5 +34,19 @@ describe('sanitizeCheckoutUrl', () => {
     expect(sanitizeCheckoutUrl('http://pay.saspay.me/checkout/abc')).toBeNull()
     expect(sanitizeCheckoutUrl('javascript:alert(1)')).toBeNull()
     expect(sanitizeCheckoutUrl(42)).toBeNull()
+  })
+})
+
+describe('sanitizeProviderUrl', () => {
+  it('accepte une page opérateur en https', () => {
+    expect(sanitizeProviderUrl('https://pay.wave.com/c/cos-123')).toBe('https://pay.wave.com/c/cos-123')
+    expect(sanitizeProviderUrl('')).toBe('')
+    expect(sanitizeProviderUrl(null)).toBe('')
+  })
+  it('refuse le http, les identifiants et les schémas dangereux', () => {
+    expect(sanitizeProviderUrl('http://pay.wave.com/x')).toBeNull()
+    expect(sanitizeProviderUrl('javascript:alert(1)')).toBeNull()
+    expect(sanitizeProviderUrl('https://user:pass@evil.example/')).toBeNull()
+    expect(sanitizeProviderUrl(42)).toBeNull()
   })
 })

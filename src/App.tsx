@@ -26,6 +26,8 @@ const Numbers = lazy(() => import('@/pages/client/Numbers'))
 const Wallet = lazy(() => import('@/pages/client/Wallet'))
 const TopupStatus = lazy(() => import('@/pages/client/TopupStatus'))
 const Profile = lazy(() => import('@/pages/client/Profile'))
+// Page de paiement Numflash (Mobile Money direct, sans redirection vers le prestataire).
+const Checkout = lazy(() => import('@/pages/client/Checkout'))
 
 const lazyPage = (node: ReactNode) => <Suspense fallback={<PageLoader />}>{node}</Suspense>
 /** Pages au design de la landing : le fond reste celui de la page pendant le chargement. */
@@ -50,6 +52,7 @@ export default function App() {
       <Route path="/inscription" element={lazyGlow(<Signup />)} />
       <Route path="/glow" element={lazyPage(<GlowPage />)} />
       <Route path="/" element={<HomeEntry />} />
+      <Route path="/paiement" element={<ProtectedRoute>{lazyGlow(<Checkout />)}</ProtectedRoute>} />
       <Route element={<ProtectedRoute>{lazyGlow(<ClientShell />)}</ProtectedRoute>}>
         <Route path="/acheter" element={<Buy />} />
         <Route path="/service/:slug" element={<LegacyServiceRedirect />} />
