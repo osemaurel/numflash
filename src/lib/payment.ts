@@ -184,3 +184,24 @@ export function networkStyle(code: string, name: string): { bg: string; fg: stri
 export function isRedirectNetwork(code: string): boolean {
   return /^(wave|djamo|paydunya)/.test(code)
 }
+
+const NETWORK_NAMES: [RegExp, string][] = [
+  [/^mtn/, 'MTN MoMo'],
+  [/^moov/, 'Moov Money'],
+  [/^orange/, 'Orange Money'],
+  [/^wave/, 'Wave'],
+  [/^celtiis/, 'Celtiis Cash'],
+  [/^airtel/, 'Airtel Money'],
+  [/^freemoney/, 'Free Money'],
+  [/^expresso/, 'Expresso'],
+  [/^wizall/, 'Wizall'],
+  [/^djamo/, 'Djamo'],
+  [/^mobi_cash/, 'Mobi Cash'],
+  [/^paydunya/, 'PayDunya'],
+]
+
+/** Nom lisible d'un réseau à partir de son code (« mtn_bj » → « MTN MoMo »). */
+export function networkLabel(code: string | null | undefined): string {
+  if (!code) return '—'
+  return NETWORK_NAMES.find(([re]) => re.test(code))?.[1] ?? code
+}
