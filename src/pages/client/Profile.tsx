@@ -1,9 +1,9 @@
 import { useEffect, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Gift, LogOut, Mail, MessageCircle, Phone, ShieldCheck, UserRound } from 'lucide-react'
+import { Gift, LogOut, Mail, Phone, ShieldCheck, UserRound } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
-import { SUPPORT_WHATSAPP_URL } from '../landing/facts'
+import { SupportLink, WhatsAppGlyph } from '@/components/Support'
 import { useLogout } from './ClientShell'
 import { Avatar, Card, PageHeader, displayName, secondaryButton } from './ui'
 
@@ -62,10 +62,14 @@ export default function Profile() {
         <div className="flex flex-col gap-5 min-[810px]:gap-6">
           <Card title="Assistance">
             <p className="-mt-2 text-[14px] leading-[20px] text-[var(--glow-gray)]">Une question sur une recharge ou un numéro ? Écrivez-nous sur WhatsApp.</p>
-            <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noreferrer" className={secondaryButton}>
-              <MessageCircle className="h-[18px] w-[18px] text-[#1fa855]" strokeWidth={2} aria-hidden />
+            <SupportLink
+              where="profil"
+              className={secondaryButton}
+              fallback={<p className="rounded-2xl bg-[var(--glow-bg)] px-4 py-3 text-[13px] text-[var(--glow-gray)]">L’assistance WhatsApp sera bientôt disponible.</p>}
+            >
+              <WhatsAppGlyph className="h-[18px] w-[18px] text-[#1fa855]" />
               Contacter l’assistance
-            </a>
+            </SupportLink>
           </Card>
 
           <Card title="Affiliation" aside={<span className="rounded-full bg-[var(--glow-bg)] px-2 py-0.5 text-[12px] font-semibold text-[var(--glow-gray)]">Bientôt</span>}>

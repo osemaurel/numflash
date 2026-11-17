@@ -3,7 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Headphones } from 'lucide-react'
 import { cn, formatFCFA } from '@/lib/utils'
 import { Icon, SvgImg, spring } from '../../glow/primitives'
-import { AFFILIATE_REWARD_XOF, SUPPORT_WHATSAPP_URL, type LandingFacts } from '../facts'
+import { SupportLink } from '@/components/Support'
+import { AFFILIATE_REWARD_XOF, type LandingFacts } from '../facts'
 import { Pill } from '../ui'
 
 function faqs(facts: LandingFacts) {
@@ -70,14 +71,12 @@ function SupportCard() {
         <Pill icon={Headphones}>Assistance</Pill>
         <h3 className="font-glow-display text-[18px] font-medium leading-[21.6px] text-black">Vous ne trouvez pas votre réponse ?</h3>
         <p className="text-[15px] leading-[22.5px] tracking-[-0.3px] text-[var(--glow-text)] opacity-90">Notre équipe vous répond sur WhatsApp.</p>
-        <a
-          href={SUPPORT_WHATSAPP_URL}
-          target="_blank"
-          rel="noreferrer"
+        <SupportLink
+          where="faq"
           className="inline-flex items-center justify-center rounded-lg bg-[var(--glow-blue)] px-4 py-3 text-[16px] font-medium leading-[19.2px] text-white transition-colors hover:bg-[var(--glow-blue-dark)]"
         >
           Écrire sur WhatsApp
-        </a>
+        </SupportLink>
       </div>
     </div>
   )

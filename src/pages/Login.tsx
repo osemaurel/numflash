@@ -8,7 +8,8 @@ import { pendingServiceSlug, safeRedirect, withRedirect } from '@/lib/redirect'
 import { useAuth } from '@/hooks/useAuth'
 import { AuthShell } from './auth/AuthShell'
 import { FormAlert, OrDivider, PasswordField, SubmitButton, TextField } from './auth/fields'
-import { FALLBACK_FACTS, SUPPORT_WHATSAPP_URL } from './landing/facts'
+import { SupportLink } from '@/components/Support'
+import { FALLBACK_FACTS } from './landing/facts'
 
 const schema = z.object({
   email: z.string().trim().min(1, 'Saisissez votre adresse e-mail.').email('Cette adresse e-mail n’est pas valide.'),
@@ -44,7 +45,7 @@ function pendingPurchase(target: string | null): string | null {
   return FALLBACK_FACTS.catalog.find((s) => s.slug === slug)?.name ?? 'votre numéro'
 }
 
-const FORGOT_URL = SUPPORT_WHATSAPP_URL.replace(/text=[^&]*/, `text=${encodeURIComponent('Bonjour, j’ai oublié le mot de passe de mon compte Numflash.')}`)
+const FORGOT_TEXT = 'Bonjour, j’ai oublié le mot de passe de mon compte Numflash.'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -143,9 +144,9 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
             labelAside={
-              <a href={FORGOT_URL} target="_blank" rel="noreferrer" className="text-[13px] font-medium leading-[16px] text-[var(--glow-blue-dark)] hover:underline">
+              <SupportLink where="mot_de_passe_oublie" text={FORGOT_TEXT} className="text-[13px] font-medium leading-[16px] text-[var(--glow-blue-dark)] hover:underline">
                 Mot de passe oublié ?
-              </a>
+              </SupportLink>
             }
             required
           />

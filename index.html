@@ -10,8 +10,26 @@
     <meta property="og:title" content="Numflash — Numéros virtuels pour vos codes SMS, payés en FCFA" />
     <meta property="og:description" content="Recevez vos codes de vérification avec un numéro virtuel et payez en Mobile Money. Sans abonnement, remboursé si le SMS n’arrive pas." />
     <title>Numflash — Numéros virtuels pour vos codes SMS, payés en FCFA</title>
+    <!-- Meta Pixel Code -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      // Application monopage : les changements de page sont envoyés par l'application (pas de doublon).
+      fbq.disablePushState = true;
+      fbq('init', '1128467830050163');
+      // L'administration n'est pas suivie ; les pages suivantes sont envoyées par l'application.
+      if (!/^\/admin(\/|$)/.test(location.pathname)) fbq('track', 'PageView');
+    </script>
+    <!-- End Meta Pixel Code -->
   </head>
   <body>
+    <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1128467830050163&ev=PageView&noscript=1" /></noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

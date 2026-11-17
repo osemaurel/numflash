@@ -6,6 +6,7 @@ import { useBalance } from '@/hooks/useBalance'
 import { useProfile } from '@/hooks/useProfile'
 import { AppShell, sidebarIdle, sidebarItem, type NavItem } from './AppShell'
 import UserMessages from './UserMessages'
+import { SupportFab, SupportLink, WhatsAppGlyph } from '@/components/Support'
 
 export { useLogout } from './AppShell'
 
@@ -35,6 +36,10 @@ export default function ClientShell({ children }: { children?: ReactNode }) {
             Affiliation
             <span className="ml-auto rounded-full bg-[var(--glow-bg)] px-2 py-0.5 text-[11px] font-semibold text-[var(--glow-gray)]">Bientôt</span>
           </span>
+          <SupportLink where="menu" className={cn(sidebarItem, sidebarIdle)}>
+            <WhatsAppGlyph className="h-5 w-5 text-[#1fa855]" />
+            Support WhatsApp
+          </SupportLink>
           {isAdmin ? (
             <Link to="/admin" className={cn(sidebarItem, sidebarIdle, 'mt-3')}>
               <ShieldCheck className="h-5 w-5" strokeWidth={1.8} aria-hidden />
@@ -70,6 +75,7 @@ export default function ClientShell({ children }: { children?: ReactNode }) {
     >
       <UserMessages />
       {children ?? <Outlet />}
+      <SupportFab where="espace_client" className="bottom-[calc(76px+env(safe-area-inset-bottom))] min-[1024px]:hidden" />
     </AppShell>
   )
 }

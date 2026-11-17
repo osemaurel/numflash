@@ -7,7 +7,7 @@ import { PhoneFrame } from '../glow/Phone'
 import { Appear, Img } from '../glow/primitives'
 import { AppScreen } from '../landing/AppScreen'
 import { NumberCard, type CardTone } from '../landing/NumberCard'
-import { SUPPORT_WHATSAPP_URL } from '../landing/facts'
+import { SupportLink } from '@/components/Support'
 import { Pill, ServiceTile, Wordmark, signedFCFA } from '../landing/ui'
 
 /*
@@ -189,9 +189,9 @@ export function AuthShell({
           </main>
           <footer className="flex flex-col items-center gap-1.5 pb-2 text-[13px] leading-[19.5px] text-[var(--glow-gray)] min-[810px]:flex-row min-[810px]:justify-between">
             <span>© {new Date().getFullYear()} Numflash</span>
-            <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noreferrer" className="transition-colors hover:text-[var(--glow-text)]">
+            <SupportLink where="auth" className="transition-colors hover:text-[var(--glow-text)]">
               Besoin d’aide ? <span className="font-medium text-[var(--glow-blue-dark)]">Assistance WhatsApp</span>
-            </a>
+            </SupportLink>
           </footer>
         </div>
         <AuthVisual v={v} />

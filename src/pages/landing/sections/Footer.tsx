@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
-import { MessageCircle } from 'lucide-react'
 import { NAV } from '../LandingHeader'
-import { SUPPORT_WHATSAPP_URL } from '../facts'
+import { SupportLink, WhatsAppGlyph } from '@/components/Support'
 import { Wordmark } from '../ui'
 
 const link = 'text-[15px] font-medium leading-[22.5px] text-[var(--glow-text)] transition-opacity hover:opacity-60'
@@ -13,9 +12,9 @@ export default function Footer() {
         <div className="flex w-full items-center">
           <Wordmark />
           <div className="flex flex-1 items-center justify-end gap-2">
-            <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noreferrer" aria-label="Assistance WhatsApp" className="flex h-[30px] w-[30px] items-center justify-center opacity-60 transition-opacity hover:opacity-100">
-              <MessageCircle className="h-6 w-6 text-black" strokeWidth={2} aria-hidden />
-            </a>
+            <SupportLink where="footer" aria-label="Assistance WhatsApp" className="flex h-[30px] w-[30px] items-center justify-center opacity-60 transition-opacity hover:opacity-100">
+              <WhatsAppGlyph className="h-6 w-6 text-black" />
+            </SupportLink>
           </div>
         </div>
         <nav className="grid w-full grid-cols-2 gap-5 min-[810px]:flex min-[810px]:items-center" aria-label="Liens du pied de page">

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Save, ShieldAlert } from 'lucide-react'
+import { ArrowRight, ExternalLink, Save, ShieldAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { translateAdminError } from '@/lib/admin-errors'
 import { fractionToPercent, normalizeDecimal, parseIntegerInput, percentToFraction } from '@/lib/decimal'
 import { computePriceXof, type PricingSettings } from '@/lib/pricing'
 import { supabase } from '@/lib/supabase'
+import { displayWhatsapp, normalizeWhatsapp, resetSupportNumber, whatsappUrl } from '@/lib/support'
 import { cn, formatFCFA } from '@/lib/utils'
 import { Button, Card, Field, Notice, PageHeader, Select, TextInput } from './ui'
 
@@ -24,6 +25,7 @@ interface Form {
   fivesim_low_balance_threshold: string
   report_timezone: string
   saspay_customer_email: string
+  support_whatsapp: string
 }
 
 interface ServiceOption {
@@ -75,6 +77,7 @@ function toForm(s: Stored): Form {
     fivesim_low_balance_threshold: showDecimal(s.fivesim_low_balance_threshold),
     report_timezone: String(s.report_timezone ?? 'Africa/Lagos'),
     saspay_customer_email: typeof s.saspay_customer_email === 'string' ? s.saspay_customer_email : '',
+    support_whatsapp: typeof s.support_whatsapp === 'string' ? s.support_whatsapp : '',
   }
 }
 
@@ -139,6 +142,13 @@ function parseForm(form: Form, stored: Stored): Parsed {
     errors.saspay_customer_email = 'Adresse e-mail invalide.'
   } else if (contactEmail !== (typeof stored.saspay_customer_email === 'string' ? stored.saspay_customer_email : '')) {
     changes.saspay_customer_email = contactEmail
+  }
+  const supportRaw = form.support_whatsapp.trim()
+  const supportNumber = supportRaw ? normalizeWhatsapp(supportRaw) : ''
+  if (supportNumber === null) {
+    errors.support_whatsapp = 'Numéro au format international attendu, avec l’indicatif du pays (ex. +229 97 12 34 56).'
+  } else if (supportNumber !== (typeof stored.support_whatsapp === 'string' ? stored.support_whatsapp : '')) {
+    changes.support_whatsapp = supportNumber
   }
 
   const draftPricing =
@@ -274,6 +284,7 @@ export default function AdminSettings() {
       toast.error(translateAdminError(error))
       return
     }
+    if ('support_whatsapp' in parsed.changes) resetSupportNumber()
     toast.success(changeCount > 1 ? `${changeCount} réglages enregistrés.` : 'Réglage enregistré.')
     setReason('')
     void load()
@@ -339,6 +350,57 @@ export default function AdminSettings() {
                 Aucune adresse n’est fixée : tant que ce champ est vide, SasPay reçoit l’e-mail saisi par le client.
               </Notice>
             ) : null}
+          </Card>
+
+          <Card title="Support client">
+            <p className={lead}>
+              Numéro WhatsApp du support. Il crée les boutons « Contacter le support » du site, de la connexion et de l’espace client :
+              un clic ouvre WhatsApp avec un message déjà rédigé.
+            </p>
+            <Field
+              id="support-whatsapp"
+              label="Numéro WhatsApp du support"
+              hint="Avec l’indicatif du pays. Laissez vide pour masquer les boutons de support."
+              error={parsed.errors.support_whatsapp}
+            >
+              <TextInput
+                id="support-whatsapp"
+                type="tel"
+                inputMode="tel"
+                autoComplete="off"
+                placeholder="+229 97 12 34 56"
+                value={form.support_whatsapp}
+                onChange={set('support_whatsapp')}
+                aria-invalid={Boolean(parsed.errors.support_whatsapp)}
+              />
+            </Field>
+            {(() => {
+              const number = form.support_whatsapp.trim() ? normalizeWhatsapp(form.support_whatsapp) : null
+              if (!form.support_whatsapp.trim()) {
+                return (
+                  <Notice tone="amber" icon={ShieldAlert}>
+                    Aucun numéro : les boutons de support sont masqués sur tout le site.
+                  </Notice>
+                )
+              }
+              if (!number) return null
+              return (
+                <a
+                  href={whatsappUrl(number)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--glow-bg)] px-4 py-3 text-[14px] text-[var(--glow-text)] transition-colors hover:bg-[rgb(236,246,255)]"
+                >
+                  <span className="flex min-w-0 flex-col">
+                    <span className="font-medium text-black">Tester le lien</span>
+                    <span className="truncate text-[13px] text-[var(--glow-gray)]">
+                      {displayWhatsapp(number)} · wa.me/{number.replace(/\D/g, '')}
+                    </span>
+                  </span>
+                  <ExternalLink className="h-4 w-4 shrink-0 text-[var(--glow-blue)]" strokeWidth={2} aria-hidden />
+                </a>
+              )
+            })()}
           </Card>
 
           <Card title="Anti-abus">

@@ -167,7 +167,7 @@ export function AppShell({
       <Sidebar nav={nav} badge={badge} extra={sidebarExtra} bottom={sidebarBottom} />
       <div className="flex min-w-0 flex-1 flex-col">
         <MobileHeader badge={badge} right={headerRight} />
-        <main className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-28 pt-3 min-[810px]:px-8 min-[1024px]:px-10 min-[1024px]:pb-12 min-[1024px]:pt-9">
+        <main className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-36 pt-3 min-[810px]:px-8 min-[1024px]:px-10 min-[1024px]:pb-12 min-[1024px]:pt-9">
           <Suspense fallback={<PageFallback />}>{children ?? <Outlet />}</Suspense>
         </main>
       </div>

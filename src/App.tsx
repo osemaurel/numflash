@@ -1,8 +1,9 @@
-import { lazy, Suspense, type ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import PageLoader from '@/components/PageLoader'
 import { useAuth } from '@/hooks/useAuth'
+import { track } from '@/lib/pixel'
 
 // L'administration est chargée à la demande : les clients ne téléchargent jamais ce code.
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout'))
@@ -48,7 +49,19 @@ function HomeEntry() {
   )
 }
 
+/** Pixel Meta : une page vue à chaque changement de page (la première part depuis index.html). */
+let lastTrackedPath = typeof window === 'undefined' ? '' : window.location.pathname
+function usePixelPageViews() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname === lastTrackedPath) return
+    lastTrackedPath = pathname
+    track('PageView')
+  }, [pathname])
+}
+
 export default function App() {
+  usePixelPageViews()
   return (
     <Routes>
       <Route path="/connexion" element={lazyGlow(<Login />)} />

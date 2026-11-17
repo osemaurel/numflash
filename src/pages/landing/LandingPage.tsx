@@ -16,6 +16,7 @@ import ServiceMarquee from './sections/ServiceMarquee'
 import Faq from './sections/Faq'
 import Cta from './sections/Cta'
 import Footer from './sections/Footer'
+import { SupportFab } from '@/components/Support'
 
 /**
  * Landing page publique de Numflash, construite sur le design du remix « Glow ».
@@ -51,6 +52,7 @@ export default function LandingPage() {
         <Cta />
       </main>
       <Footer />
+      <SupportFab where="landing" className="bottom-5 min-[810px]:bottom-7 min-[810px]:right-7" />
     </div>
   )
 }

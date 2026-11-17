@@ -77,9 +77,6 @@ export const FALLBACK_FACTS: LandingFacts = {
 /** Programme d'affiliation (règles fixées par Numflash, à venir dans l'espace client). */
 export const AFFILIATE_REWARD_XOF = 500
 
-/** Assistance : le numéro WhatsApp déjà utilisé par Numflash. */
-export const SUPPORT_WHATSAPP_URL = "https://wa.me/18258977760?text=Bonjour%2C%20j'ai%20besoin%20d'aide%20avec%20Numflash."
-
 let cache: LandingFacts | null = null
 let pending: Promise<LandingFacts> | null = null
 

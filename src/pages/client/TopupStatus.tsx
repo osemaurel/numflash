@@ -4,7 +4,9 @@ import { CheckCircle2, Clock, KeyRound, Loader2, Smartphone, XCircle } from 'luc
 import { cn, formatFCFA } from '@/lib/utils'
 import { useTopupStatus } from '@/hooks/useTopupStatus'
 import { confirmTopupOtp } from '@/lib/payment-api'
+import { moneyParams, track, trackOnce } from '@/lib/pixel'
 import { primaryButton, secondaryButton } from './ui'
+import { SupportLink, WhatsAppGlyph } from '@/components/Support'
 
 /** « +22997123456 » → « +229 97 12 34 56 » (lecture plus facile). */
 function prettyPhone(e164: string | null): string | null {
@@ -83,6 +85,12 @@ export default function TopupStatus() {
   const [params] = useSearchParams()
   const pushFlow = params.get('push') === '1'
   const { topup, phase, retry } = useTopupStatus(topupId)
+  // Pixel : recharge créditée (statut lu en base, confirmé par le webhook) ; une seule fois par recharge.
+  const succeeded = phase === 'final' && topup?.status === 'succeeded'
+  useEffect(() => {
+    if (!succeeded || !topup) return
+    trackOnce(`purchase_${topup.id}`, () => track('Purchase', { ...moneyParams(topup.amount_xof), content_name: 'Recharge', content_type: 'product', num_items: 1 }, `topup_${topup.id}`))
+  }, [succeeded, topup])
   const amount = topup ? formatFCFA(topup.amount_xof) : null
   const phone = prettyPhone(topup?.payer_phone ?? null)
   const needsCode = params.get('code') === '1' || CONFIRM_OTP_RE.test(topup?.payer_network ?? '')
@@ -134,6 +142,10 @@ export default function TopupStatus() {
         <Link to="/wallet" className={primaryButton}>
           Réessayer une recharge
         </Link>
+        <SupportLink where="recharge_echouee" text={`Bonjour, ma recharge Numflash n’a pas abouti mais mon compte Mobile Money a été débité. Référence : ${topupId}`} className={secondaryButton}>
+          <WhatsAppGlyph className="h-[18px] w-[18px] text-[#1fa855]" />
+          Contacter l’assistance
+        </SupportLink>
       </Panel>
     )
   }

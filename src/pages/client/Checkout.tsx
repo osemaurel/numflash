@@ -18,6 +18,7 @@ import {
   type PaymentCountry,
 } from '@/lib/payment'
 import { fetchPaymentOptions, payTopup } from '@/lib/payment-api'
+import { moneyParams, track } from '@/lib/pixel'
 import { TextField } from '../auth/fields'
 import { Wordmark } from '../landing/ui'
 import { NetworkLogo } from './NetworkLogo'
@@ -116,6 +117,14 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const prefilled = useRef(false)
   const otpRef = useRef<HTMLInputElement>(null)
+
+  // Pixel : arrivée sur la page de paiement d'une recharge (une fois par montant).
+  const checkoutTracked = useRef<number | null>(null)
+  useEffect(() => {
+    if (!Number.isSafeInteger(amount) || amount <= 0 || checkoutTracked.current === amount) return
+    checkoutTracked.current = amount
+    track('InitiateCheckout', { ...moneyParams(amount), content_name: 'Recharge', num_items: 1 })
+  }, [amount])
 
   useEffect(() => {
     const prev = document.title
@@ -227,6 +236,7 @@ export default function Checkout() {
       if (res.code === 'otp_required') otpRef.current?.focus()
       return
     }
+    track('AddPaymentInfo', { ...moneyParams(amount), content_name: 'Recharge', payment_method: network.code }, `pay_${res.topupId}`)
     if (res.checkoutUrl) {
       // Wave, Djamo… : la validation se fait sur la page de l'opérateur.
       window.location.assign(res.checkoutUrl)

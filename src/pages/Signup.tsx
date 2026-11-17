@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { AuthShell } from './auth/AuthShell'
 import { FormAlert, OrDivider, PasswordField, PhoneField, RuleHint, SubmitButton, TextField, defaultDialIso, toInternational } from './auth/fields'
 import { FALLBACK_FACTS } from './landing/facts'
+import { track } from '@/lib/pixel'
 
 const MIN_PASSWORD = 8
 
@@ -113,6 +114,7 @@ export default function Signup() {
         setFormError({ message: 'Un compte existe déjà avec cette adresse e-mail.', existing: true })
         return
       }
+      track('CompleteRegistration', { content_name: 'Inscription', status: true }, data.user?.id ? `signup_${data.user.id}` : undefined)
       if (!data.session) {
         setConfirmFor(parsed.data.email)
         return

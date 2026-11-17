@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Check, Globe2, Search, type LucideIcon } from 'lucide-react'
 import { cn, formatFCFA } from '@/lib/utils'
+import { moneyParams, track } from '@/lib/pixel'
 import type { PricingSettings } from '@/lib/pricing'
 import { SH_PILL } from '../glow/sections/Feature1'
 import type { CatalogService } from './facts'
@@ -175,6 +176,16 @@ export function BuyPicker({
 
   const priceOf = (c: CountryOffer) => (service && settings ? offerPrice(c, service, settings) : null)
   const price = selected ? priceOf(selected) : null
+
+  // Pixel : un numéro (application + pays) consulté avec son prix.
+  const viewed = service && selected && price != null ? `${service.slug}:${selected.code}` : null
+  const lastViewed = useRef<string | null>(null)
+  useEffect(() => {
+    if (!viewed || !service || !selected || price == null || lastViewed.current === viewed) return
+    lastViewed.current = viewed
+    track('ViewContent', { ...moneyParams(price), content_type: 'product', content_ids: [viewed], content_name: `${service.name} · ${selected.name}`, content_category: 'numero_virtuel' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewed])
 
   function chooseService(next: string) {
     if (next === slug) return

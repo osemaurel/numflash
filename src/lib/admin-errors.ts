@@ -15,6 +15,7 @@ const SETTING_LABELS: Record<string, string> = {
   cancel_ratio_window: 'Fenêtre de calcul',
   report_timezone: 'Fuseau horaire',
   saspay_customer_email: 'E-mail transmis au prestataire de paiement',
+  support_whatsapp: 'Numéro WhatsApp du support',
   amount_xof: 'Montant',
   name_fr: 'Nom',
   sort_order: "Ordre d'affichage",

@@ -7,6 +7,7 @@ import type { ServiceRow } from '@/hooks/useServices'
 import type { CatalogService } from '../landing/facts'
 import type { CountryOffer } from '../landing/buy'
 import { ConfirmPurchase, primaryButton } from './ui'
+import { moneyParams, trackCustom } from '@/lib/pixel'
 
 /** Services du catalogue au format du sélecteur d'achat. */
 export function toCatalog(services: ServiceRow[]): CatalogService[] {
@@ -65,6 +66,7 @@ export function PurchaseButton({
       if (res.code === 'price_changed' && res.priceXof) setQuoted(res.priceXof)
       return res.message
     }
+    trackCustom('AchatNumero', { ...moneyParams(payable), content_type: 'product', content_ids: [`${service!.slug}:${country!.code}`], content_name: `${service!.name} · ${country!.name}` }, `order_${res.orderId}`)
     setOpen(false)
     setQuoted(null)
     navigate('/numeros')
