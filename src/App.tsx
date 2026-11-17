@@ -10,6 +10,7 @@ const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'))
 const AdminCatalog = lazy(() => import('@/pages/admin/AdminCatalog'))
 const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers'))
+const AdminUserDossier = lazy(() => import('@/pages/admin/AdminUserDossier'))
 const AdminSales = lazy(() => import('@/pages/admin/AdminSales'))
 const AdminTopups = lazy(() => import('@/pages/admin/AdminTopups'))
 // Maquette « Glow » (base du design) : publique, isolée et chargée à la demande.
@@ -68,6 +69,7 @@ export default function App() {
         <Route path="reglages" element={<AdminSettings />} />
         <Route path="catalogue" element={<AdminCatalog />} />
         <Route path="utilisateurs" element={<AdminUsers />} />
+        <Route path="utilisateurs/:userId" element={<AdminUserDossier />} />
         <Route path="ventes" element={<AdminSales />} />
         <Route path="recharges" element={<AdminTopups />} />
       </Route>

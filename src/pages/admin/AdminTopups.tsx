@@ -8,6 +8,7 @@ import {
   DataTable,
   DetailRow,
   DetailSection,
+  DossierLink,
   Drawer,
   DrawerState,
   PERIODS,
@@ -32,9 +33,9 @@ const PAGE = 25
 const GROUPS = ['all', 'succeeded', 'pending', 'failed'] as const
 type Group = (typeof GROUPS)[number]
 
-type TopupStatus = 'pending' | 'succeeded' | 'failed' | 'expired'
+export type TopupStatus = 'pending' | 'succeeded' | 'failed' | 'expired'
 
-interface TopupRow {
+export interface TopupRow {
   id: string
   created_at: string
   updated_at: string
@@ -90,11 +91,11 @@ const STATUS: Record<TopupStatus, { label: string; tone: Tone }> = {
   expired: { label: 'Expirée', tone: 'neutral' },
 }
 
-function TopupStatusPill({ status }: { status: TopupStatus }) {
+export function TopupStatusPill({ status }: { status: TopupStatus }) {
   return <StatusPill tone={STATUS[status].tone}>{STATUS[status].label}</StatusPill>
 }
 
-function NetworkChip({ code }: { code: string | null }) {
+export function NetworkChip({ code }: { code: string | null }) {
   if (!code) return <span className="text-[var(--glow-gray)]">Page de paiement</span>
   return (
     <span className="flex items-center gap-2 whitespace-nowrap">
@@ -145,7 +146,7 @@ const columns: Column<TopupRow>[] = [
   { key: 'status', header: 'Statut', wide: true, cell: (t) => <TopupStatusPill status={t.status} /> },
 ]
 
-function TopupPanel({ id, reloadKey }: { id: string; reloadKey: number }) {
+export function TopupPanel({ id, reloadKey, inDossier = false }: { id: string; reloadKey: number; inDossier?: boolean }) {
   const { data, loading, error } = useRpc<TopupDetail>('admin_topup_detail', { p_topup_id: id }, reloadKey)
   if (!data) return <DrawerState loading={loading} error={error} />
   const t = data.topup
@@ -177,6 +178,7 @@ function TopupPanel({ id, reloadKey }: { id: string; reloadKey: number }) {
             <DetailRow label="Téléphone" value={data.user.phone ?? '—'} />
             <DetailRow label="Solde actuel" value={formatFCFA(data.user.balance_xof)} />
             {data.user.is_blocked ? <DetailRow label="Compte" value={<StatusPill tone="red">Bloqué</StatusPill>} /> : null}
+            {inDossier ? null : <DossierLink userId={data.user.id} />}
           </>
         ) : (
           <p className="py-2 text-[14px] text-[var(--glow-gray)]">Client introuvable.</p>

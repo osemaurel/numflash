@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Check, ChevronLeft, ChevronRight, Copy, Search, X, type LucideIcon } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { ArrowRight, Check, ChevronLeft, ChevronRight, Copy, Search, X, type LucideIcon } from 'lucide-react'
 import { translateAdminError } from '@/lib/admin-errors'
 import { supabase } from '@/lib/supabase'
 import { cn, formatFCFA } from '@/lib/utils'
@@ -169,6 +169,7 @@ export function DataTable<T extends { id: string }>({
   selectedId,
   loading,
   empty,
+  canOpen,
 }: {
   rows: T[]
   columns: Column<T>[]
@@ -176,6 +177,8 @@ export function DataTable<T extends { id: string }>({
   selectedId: string | null
   loading: boolean
   empty: string
+  /** Lignes sans détail à ouvrir (ni curseur, ni focus clavier). Toutes s'ouvrent par défaut. */
+  canOpen?: (row: T) => boolean
 }) {
   return (
     <div className="-mx-4 overflow-x-auto min-[810px]:mx-0">
@@ -208,21 +211,28 @@ export function DataTable<T extends { id: string }>({
                   </td>
                 </tr>
               ))
-            : rows.map((row) => (
+            : rows.map((row) => {
+                const openable = canOpen ? canOpen(row) : true
+                return (
                 <tr
                   key={row.id}
-                  tabIndex={0}
-                  onClick={() => onOpen(row)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      onOpen(row)
-                    }
-                  }}
-                  aria-selected={row.id === selectedId}
+                  tabIndex={openable ? 0 : undefined}
+                  onClick={openable ? () => onOpen(row) : undefined}
+                  onKeyDown={
+                    openable
+                      ? (e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            onOpen(row)
+                          }
+                        }
+                      : undefined
+                  }
+                  aria-selected={openable ? row.id === selectedId : undefined}
                   className={cn(
-                    'cursor-pointer outline-none transition-colors focus-visible:bg-[rgb(236,246,255)]',
-                    row.id === selectedId ? 'bg-[rgb(236,246,255)]' : 'hover:bg-[var(--glow-bg)]',
+                    'outline-none transition-colors',
+                    openable && 'cursor-pointer focus-visible:bg-[rgb(236,246,255)]',
+                    row.id === selectedId ? 'bg-[rgb(236,246,255)]' : openable && 'hover:bg-[var(--glow-bg)]',
                     loading && 'opacity-60',
                   )}
                 >
@@ -239,7 +249,8 @@ export function DataTable<T extends { id: string }>({
                     </td>
                   ))}
                 </tr>
-              ))}
+                )
+              })}
         </tbody>
       </table>
       {!loading && rows.length === 0 ? <p className="px-4 py-10 text-center text-[14px] text-[var(--glow-gray)]">{empty}</p> : null}
@@ -421,6 +432,19 @@ export function DetailRow({ label, value, mono = false, copy }: { label: string;
   )
 }
 
+/** Lien vers le dossier complet d'un client (depuis les panneaux Ventes et Recharges). */
+export function DossierLink({ userId }: { userId: string }) {
+  return (
+    <Link
+      to={`/admin/utilisateurs/${userId}`}
+      className="mt-1 flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[var(--glow-bg)] text-[14px] font-medium text-[var(--glow-blue-dark)] transition-colors hover:bg-[rgb(236,246,255)]"
+    >
+      Ouvrir le dossier du client
+      <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+    </Link>
+  )
+}
+
 /** « 2.5000 » → « 2,5 » ; « 600.0000 » → « 600 » (affichage seulement, depuis la chaîne exacte). */
 export function decimalText(value: string | null | undefined) {
   if (!value) return '—'
@@ -486,6 +510,28 @@ const EVENT_LABELS: Record<string, string> = {
   topup_fail_ignored: 'Échec ignoré (recharge déjà close)',
   topup_amount_mismatch: 'Montant incohérent : non crédité',
   webhook_verify_failed: 'Vérification du paiement impossible',
+  // Activité d'un client (dossier utilisateur)
+  order_create_refused: 'Achat refusé',
+  order_create_error: 'Achat interrompu par une erreur',
+  order_create_unconfigured: 'Achat impossible : service non configuré',
+  topup_pay_refused: 'Paiement refusé',
+  topup_pay_invalid_network: 'Réseau de paiement indisponible',
+  topup_pay_invalid_tier: 'Montant de recharge refusé',
+  topup_pay_rate_limited: 'Trop de demandes de paiement',
+  topup_pay_error: 'Paiement interrompu par une erreur',
+  topup_create_invalid_tier: 'Montant de recharge refusé',
+  topup_create_unconfigured: 'Recharge impossible : paiement non configuré',
+  topup_create_refused: 'Recharge refusée',
+  topup_create_rate_limited: 'Trop de demandes de recharge',
+  // Actions de l'administration sur un compte
+  balance_adjusted: 'Solde ajusté par un administrateur',
+  user_blocked: 'Compte bloqué',
+  user_unblocked: 'Compte débloqué',
+  user_message_sent: 'Message envoyé au client',
+  user_deleted: 'Compte supprimé',
+  user_auth_disabled: 'Connexion désactivée',
+  user_delete_failed: 'Suppression échouée',
+  admin_role_granted: 'Rôle administrateur attribué',
 }
 
 const STATUS_FR: Record<string, string> = {
@@ -501,6 +547,8 @@ const STATUS_FR: Record<string, string> = {
 function eventDetail(e: AuditEvent): string | null {
   const p = e.payload ?? {}
   const parts: string[] = []
+  if (typeof p.service === 'string') parts.push(typeof p.country === 'string' ? `${p.service} · ${p.country}` : p.service)
+  if (typeof p.title === 'string') parts.push(`« ${p.title} »`)
   if (typeof p.from === 'string' && typeof p.to === 'string') parts.push(`${STATUS_FR[p.from] ?? p.from} → ${STATUS_FR[p.to] ?? p.to}`)
   if (typeof p.provider_status === 'string') parts.push(`5sim : ${p.provider_status}`)
   if (typeof p.refund_amount_xof === 'number') parts.push(`remboursé ${formatFCFA(p.refund_amount_xof)}`)

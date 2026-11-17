@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Outlet } from 'react-router-dom'
 import { Gift, House, MessageSquareText, Plus, ShieldCheck, ShoppingBag, UserRound, Wallet } from 'lucide-react'
 import { cn, formatFCFA } from '@/lib/utils'
 import { useBalance } from '@/hooks/useBalance'
 import { useProfile } from '@/hooks/useProfile'
 import { AppShell, sidebarIdle, sidebarItem, type NavItem } from './AppShell'
+import UserMessages from './UserMessages'
 
 export { useLogout } from './AppShell'
 
@@ -67,7 +68,8 @@ export default function ClientShell({ children }: { children?: ReactNode }) {
         </Link>
       }
     >
-      {children}
+      <UserMessages />
+      {children ?? <Outlet />}
     </AppShell>
   )
 }

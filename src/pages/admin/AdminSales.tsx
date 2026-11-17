@@ -7,6 +7,7 @@ import {
   DataTable,
   DetailRow,
   DetailSection,
+  DossierLink,
   Drawer,
   DrawerState,
   PERIODS,
@@ -31,9 +32,9 @@ const PAGE = 25
 const GROUPS = ['all', 'pending', 'success', 'canceled', 'failed'] as const
 type Group = (typeof GROUPS)[number]
 
-type OrderStatus = 'pending' | 'received' | 'finished' | 'canceled' | 'timeout' | 'banned' | 'refunded'
+export type OrderStatus = 'pending' | 'received' | 'finished' | 'canceled' | 'timeout' | 'banned' | 'refunded'
 
-interface OrderRow {
+export interface OrderRow {
   id: string
   created_at: string
   status: OrderStatus
@@ -110,7 +111,7 @@ const STATUS: Record<OrderStatus, { label: string; tone: Tone }> = {
 
 const CANCELED_BY: Record<string, string> = { user: 'le client', system: 'le système', admin: 'un administrateur' }
 
-function OrderStatusPill({ status }: { status: OrderStatus }) {
+export function OrderStatusPill({ status }: { status: OrderStatus }) {
   return <StatusPill tone={STATUS[status].tone}>{STATUS[status].label}</StatusPill>
 }
 
@@ -159,7 +160,7 @@ const columns: Column<OrderRow>[] = [
   { key: 'status', header: 'Statut', wide: true, cell: (o) => <OrderStatusPill status={o.status} /> },
 ]
 
-function OrderPanel({ id, reloadKey }: { id: string; reloadKey: number }) {
+export function OrderPanel({ id, reloadKey, inDossier = false }: { id: string; reloadKey: number; inDossier?: boolean }) {
   const { data, loading, error } = useRpc<OrderDetail>('admin_order_detail', { p_order_id: id }, reloadKey)
   if (!data) return <DrawerState loading={loading} error={error} />
   const o = data.order
@@ -191,6 +192,7 @@ function OrderPanel({ id, reloadKey }: { id: string; reloadKey: number }) {
             <DetailRow label="Téléphone" value={data.user.phone ?? '—'} />
             <DetailRow label="Solde actuel" value={formatFCFA(data.user.balance_xof)} />
             {data.user.is_blocked ? <DetailRow label="Compte" value={<StatusPill tone="red">Bloqué</StatusPill>} /> : null}
+            {inDossier ? null : <DossierLink userId={data.user.id} />}
           </>
         ) : (
           <p className="py-2 text-[14px] text-[var(--glow-gray)]">Client introuvable.</p>

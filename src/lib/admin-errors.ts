@@ -18,6 +18,9 @@ const SETTING_LABELS: Record<string, string> = {
   amount_xof: 'Montant',
   name_fr: 'Nom',
   sort_order: "Ordre d'affichage",
+  title: 'Titre du message',
+  body: 'Texte du message',
+  level: 'Type de message',
 }
 
 const MESSAGES: Record<string, string> = {
@@ -28,6 +31,11 @@ const MESSAGES: Record<string, string> = {
   NF_REASON_REQUIRED: 'Indiquez un motif d’au moins 5 caractères.',
   NF_CANNOT_TARGET_SELF: 'Cette action ne peut pas viser votre propre compte.',
   NF_INSUFFICIENT_BALANCE: 'Le solde de l’utilisateur ne permet pas ce débit.',
+  NF_USER_DELETED: 'Ce compte a été supprimé : il ne peut plus être modifié.',
+  NF_BALANCE_NOT_ZERO: 'Le solde doit être à 0 FCFA avant la suppression.',
+  NF_ACTIVE_ORDERS: 'Des numéros sont encore en cours pour ce compte.',
+  NF_PENDING_TOPUPS: 'Une recharge est encore en attente pour ce compte.',
+  NF_CANNOT_DELETE_ADMIN: 'Un compte administrateur ne peut pas être supprimé.',
 }
 
 export interface RpcError {
